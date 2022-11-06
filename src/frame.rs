@@ -1,4 +1,4 @@
-use crate::{NUM_COLS, NUM_ROWS, WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
 // pub type Frame = Vec<Vec<&'static str>>;
 pub type Frame = Vec<Vec<String>>;

@@ -6,7 +6,7 @@ use crossterm::{
 };
 use invaders::{
     frame::{self, new_frame, Drawable},
-    invaders::Invaders,
+    monsters::Monsters,
     player::Player,
     profile::Profile,
     render::{self},
@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut player = Player::new();
     let mut instant = Instant::now();
-    let mut invaders = Invaders::new();
+    let mut invaders = Monsters::new();
     let profile = Profile::new();
     'gameloop: loop {
         // per-frame init

@@ -1,5 +1,5 @@
 pub mod frame;
-pub mod invaders;
+pub mod monsters;
 pub mod player;
 pub mod profile;
 pub mod render;

@@ -9,19 +9,19 @@ use serde::Deserialize;
 use std::{cmp::max, time::Duration};
 
 #[derive(Deserialize, Debug)]
-pub struct Invader {
+pub struct Monster {
     pub id: u8,
     pub x: usize,
     pub y: usize,
 }
 
-pub struct Monsters{
-    pub army: Vec<Invader>,
+pub struct Monsters {
+    pub army: Vec<Monster>,
     move_timer: Timer,
     direction: i32,
 }
 
-impl Monsters{
+impl Monsters {
     pub fn new() -> Self {
         let data = r#"
             [
@@ -37,7 +37,7 @@ impl Monsters{
               }
             ]
         "#;
-        let army: Vec<Invader> = serde_json::from_str(data).unwrap();
+        let army: Vec<Monster> = serde_json::from_str(data).unwrap();
 
         Self {
             army,
@@ -111,7 +111,7 @@ impl Monsters{
     }
 }
 
-impl Drawable for Monsters{
+impl Drawable for Monsters {
     fn draw(&self, frame: &mut Frame) {
         for invader in self.army.iter() {
             frame[invader.x][invader.y] = if (self.move_timer.time_left.as_secs_f32()
@@ -125,4 +125,3 @@ impl Drawable for Monsters{
         }
     }
 }
-

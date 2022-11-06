@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::{frame::Drawable, invaders::Invaders, shot::Shot, Directions, NUM_COLS, NUM_ROWS};
+use crate::{frame::Drawable, monsters::Monsters, shot::Shot, Directions, NUM_COLS, NUM_ROWS};
 
 pub struct Player {
     x: usize,
@@ -61,7 +61,7 @@ impl Player {
         self.shots.retain(|shot| !shot.dead());
     }
 
-    pub fn detect_hits(&mut self, invaders: &mut Invaders) -> bool {
+    pub fn detect_hits(&mut self, invaders: &mut Monsters) -> bool {
         let mut hit_something = false;
 
         for shot in self.shots.iter_mut() {
