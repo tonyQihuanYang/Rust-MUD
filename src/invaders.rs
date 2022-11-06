@@ -10,7 +10,7 @@ use std::{cmp::max, time::Duration};
 
 #[derive(Deserialize, Debug)]
 pub struct Invader {
-    pub id: String,
+    pub id: u8,
     pub x: usize,
     pub y: usize,
 }
@@ -26,12 +26,12 @@ impl Invaders {
         let data = r#"
             [
               {
-                "id": "x",
+                "id": 1,
                 "x": 4,
                 "y": 6
               },
               {
-                "id": "y",
+                "id": 2,
                 "x": 8,
                 "y": 10
               }
@@ -120,9 +120,9 @@ impl Drawable for Invaders {
                 / self.move_timer.duration.as_secs_f32())
                 > 0.5
             {
-                invader.id.clone()
+                invader.id.to_string()
             } else {
-                invader.id.clone()
+                invader.id.to_string()
             }
         }
     }

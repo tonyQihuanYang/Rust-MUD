@@ -10,7 +10,7 @@ impl Profile {
         Self {
             id: 0,
             exp: 0,
-            name: "baba".to_string(),
+            name: "userName".to_string(),
         }
     }
 }
