@@ -5,7 +5,7 @@ use crossterm::{
     ExecutableCommand,
 };
 use invaders::{
-    frame::{self, new_frame, Drawable},
+    frame::{self, clear_monster_list, new_frame, Drawable},
     monsters::Monsters,
     player::Player,
     profile::Profile,
@@ -87,8 +87,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         if monsters.update(delta) {
             audio.play("move");
         }
+
         if player.detect_hits(&mut monsters) {
             audio.play("explode");
+            clear_monster_list(&mut curr_frame);
         }
 
         let drawables: Vec<&dyn Drawable> = vec![&player, &monsters];

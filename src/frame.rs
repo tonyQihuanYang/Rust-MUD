@@ -1,4 +1,4 @@
-use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::{MONSTERS_LIST_X, MONSTERS_LIST_Y, WINDOW_HEIGHT, WINDOW_WIDTH};
 
 pub type Frame = Vec<Vec<String>>;
 
@@ -13,6 +13,12 @@ pub fn new_frame() -> Frame {
         cols.push(col)
     }
     cols
+}
+
+pub fn clear_monster_list(cur_frame: &mut Frame) {
+    for y in MONSTERS_LIST_Y..WINDOW_HEIGHT {
+        cur_frame[MONSTERS_LIST_X][y] = " ".to_string().repeat(WINDOW_WIDTH - MONSTERS_LIST_X);
+    }
 }
 
 pub trait Drawable {

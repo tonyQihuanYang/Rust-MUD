@@ -1,6 +1,6 @@
 use crate::{
     frame::{Drawable, Frame},
-    Directions, NUM_COLS, NUM_ROWS,
+    Directions, MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
 };
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -16,6 +16,8 @@ const MONSTERS_JSON: &str = r#"
             [
               {
                 "id": 1,
+                "name": "Spider",
+                "health": 40, 
                 "x": 4,
                 "y": 6,
                 "exp": 100,
@@ -23,6 +25,8 @@ const MONSTERS_JSON: &str = r#"
               },
               {
                 "id": 2,
+                "name": "Budge Dragon",
+                "health": 80, 
                 "x": 8,
                 "y": 10,
                 "exp": 120,
@@ -34,6 +38,7 @@ const MONSTERS_JSON: &str = r#"
 #[derive(Deserialize, Clone, Debug)]
 pub struct Monster {
     pub id: u8,
+    pub name: String,
     pub x: usize,
     pub y: usize,
     pub exp: u64,
@@ -155,15 +160,9 @@ impl Drawable for Monsters {
     fn draw(&self, frame: &mut Frame) {
         let enemies = Arc::clone(&self.enemies);
         let data = enemies.lock().unwrap();
-        for invader in data.iter() {
-            frame[invader.x][invader.y] = if (self.move_timer.time_left.as_secs_f32()
-                / self.move_timer.duration.as_secs_f32())
-                > 0.5
-            {
-                invader.id.to_string()
-            } else {
-                invader.id.to_string()
-            }
+        for (index, monster) in data.iter().enumerate() {
+            frame[monster.x][monster.y] = monster.id.to_string();
+            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] = monster.name.clone();
         }
     }
 }
