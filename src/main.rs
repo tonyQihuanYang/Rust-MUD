@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut player = Player::new();
     let mut instant = Instant::now();
-    let mut invaders = Monsters::new();
+    let mut monsters = Monsters::new();
     let profile = Profile::new();
     'gameloop: loop {
         // per-frame init
@@ -84,15 +84,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // Updates
         player.update(delta);
-        if invaders.update(delta) {
+        if monsters.update(delta) {
             audio.play("move");
         }
-        if player.detect_hits(&mut invaders) {
+        if player.detect_hits(&mut monsters) {
             audio.play("explode");
         }
 
-        // let drawables: Vec<&dyn Drawable> = vec![&player, &invaders];
-        let drawables: Vec<&dyn Drawable> = vec![&player, &invaders, &profile];
+        let drawables: Vec<&dyn Drawable> = vec![&player, &monsters];
         for drawable in drawables {
             drawable.draw(&mut curr_frame);
         }
@@ -101,14 +100,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         thread::sleep(Duration::from_millis(1));
 
         // win or lose ?
-        if invaders.all_killed() {
-            audio.play("win");
-            break 'gameloop;
-        }
-        if invaders.reached_bottom() {
-            audio.play("lose");
-            break 'gameloop;
-        }
+        // if monsters.all_killed() {
+        //     audio.play("win");
+        //     break 'gameloop;
+        // }
+        // if monsters.reached_bottom() {
+        //     audio.play("lose");
+        //     break 'gameloop;
+        // }
     }
 
     //Clean up

@@ -18,12 +18,14 @@ const MONSTERS_JSON: &str = r#"
                 "id": 1,
                 "x": 4,
                 "y": 6,
+                "exp": 100,
                 "respawn_time": 5000
               },
               {
                 "id": 2,
                 "x": 8,
                 "y": 10,
+                "exp": 120,
                 "respawn_time": 5000
               }
             ]
@@ -34,6 +36,7 @@ pub struct Monster {
     pub id: u8,
     pub x: usize,
     pub y: usize,
+    pub exp: u64,
     respawn_time: u64,
 }
 
@@ -131,18 +134,19 @@ impl Monsters {
         enemies.iter().map(|invader| invader.y).max().unwrap_or(0) >= NUM_ROWS - 1
     }
 
-    pub fn kill_invader_at(&mut self, x: usize, y: usize) -> bool {
+    pub fn kill_monster_at(&mut self, x: usize, y: usize) -> Option<Monster> {
         let enemies_lock = Arc::clone(&self.enemies);
         let mut enemies = enemies_lock.lock().unwrap();
         if let Some(idx) = enemies
             .iter()
             .position(|invader| (invader.x == x) && (invader.y == y))
         {
+            let enemy_killed = enemies[idx].clone();
             enemies.remove(idx.clone());
             self.respawn(idx);
-            true
+            Some(enemy_killed)
         } else {
-            false
+            None
         }
     }
 }

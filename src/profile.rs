@@ -1,7 +1,7 @@
 use crate::{frame::Drawable, PROFILE_X};
 pub struct Profile {
     pub id: u8,
-    pub exp: u8,
+    pub exp: u64,
     pub name: String,
 }
 
@@ -12,6 +12,10 @@ impl Profile {
             exp: 0,
             name: "UserName".to_string(),
         }
+    }
+
+    pub fn gain_exp(&mut self, exp: u64) {
+        self.exp += exp;
     }
 }
 

@@ -1,6 +1,5 @@
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 
-// pub type Frame = Vec<Vec<&'static str>>;
 pub type Frame = Vec<Vec<String>>;
 
 pub fn new_frame() -> Frame {

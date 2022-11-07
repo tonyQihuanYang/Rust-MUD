@@ -1,8 +1,12 @@
 use std::time::Duration;
 
-use crate::{frame::Drawable, monsters::Monsters, shot::Shot, Directions, NUM_COLS, NUM_ROWS};
+use crate::{
+    frame::Drawable, monsters::Monsters, profile::Profile, shot::Shot, Directions, NUM_COLS,
+    NUM_ROWS,
+};
 
 pub struct Player {
+    profile: Profile,
     x: usize,
     y: usize,
     shots: Vec<Shot>,
@@ -11,6 +15,7 @@ pub struct Player {
 impl Player {
     pub fn new() -> Self {
         Self {
+            profile: Profile::new(),
             x: NUM_COLS / 2,
             y: NUM_ROWS - 1,
             shots: Vec::new(),
@@ -61,14 +66,18 @@ impl Player {
         self.shots.retain(|shot| !shot.dead());
     }
 
-    pub fn detect_hits(&mut self, invaders: &mut Monsters) -> bool {
+    pub fn detect_hits(&mut self, monsters: &mut Monsters) -> bool {
         let mut hit_something = false;
 
         for shot in self.shots.iter_mut() {
             if !shot.exploading {
-                if invaders.kill_invader_at(shot.x, shot.y) {
-                    hit_something = true;
-                    shot.explode();
+                match monsters.kill_monster_at(shot.x, shot.y) {
+                    Some(monster_killed) => {
+                        self.profile.gain_exp(monster_killed.exp);
+                        hit_something = true;
+                        shot.explode();
+                    }
+                    None => {}
                 }
             }
         }
@@ -83,6 +92,7 @@ impl Drawable for Player {
             shot.draw(frame);
         }
         frame[self.x][self.y] = "A".to_string();
+        self.profile.draw(frame);
     }
 }
 
