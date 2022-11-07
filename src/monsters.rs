@@ -39,6 +39,7 @@ const MONSTERS_JSON: &str = r#"
 pub struct Monster {
     pub id: u8,
     pub name: String,
+    health: u64,
     pub x: usize,
     pub y: usize,
     pub exp: u64,
@@ -162,7 +163,8 @@ impl Drawable for Monsters {
         let data = enemies.lock().unwrap();
         for (index, monster) in data.iter().enumerate() {
             frame[monster.x][monster.y] = monster.id.to_string();
-            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] = monster.name.clone();
+            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] =
+                format!("{}(HP:{})", monster.name.clone(), monster.health.clone());
         }
     }
 }
