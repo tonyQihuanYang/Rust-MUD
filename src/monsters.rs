@@ -49,12 +49,12 @@ impl Monster {
             Some(d) => match d {
                 Directions::Up => {
                     if self.y + 1 < NUM_ROWS {
-                        self.y = ((self.y as i32) - 1) as usize;
+                        self.y = ((self.y as i32) + 1) as usize;
                     }
                 }
                 Directions::Down => {
                     if self.y - 1 > 0 {
-                        self.y = ((self.y as i32) + 1) as usize;
+                        self.y = ((self.y as i32) - 1) as usize;
                     }
                 }
                 Directions::Left => {
