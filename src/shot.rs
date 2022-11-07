@@ -74,19 +74,17 @@ impl Shot {
 impl Drawable for Shot {
     fn draw(&self, frame: &mut Frame) {
         match self.direction {
-            Directions::Up | Directions::Down => {
-                frame[self.x][self.y] = if self.exploading {
-                    "*".to_string()
-                } else {
-                    "|".to_string()
-                }
+            Directions::Up => {
+                frame[self.x][self.y] = " ͡".to_string();
             }
-            Directions::Left | Directions::Right => {
-                frame[self.x][self.y] = if self.exploading {
-                    "*".to_string()
-                } else {
-                    "-".to_string()
-                }
+            Directions::Down => {
+                frame[self.x][self.y] = " ͝".to_string();
+            }
+            Directions::Left => {
+                frame[self.x][self.y] = "(".to_string();
+            }
+            Directions::Right => {
+                frame[self.x][self.y] = ")".to_string();
             }
         }
     }
