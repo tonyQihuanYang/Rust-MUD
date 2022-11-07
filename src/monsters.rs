@@ -37,6 +37,42 @@ pub struct Monster {
     respawn_time: u64,
 }
 
+impl Monster {
+    pub fn walk(&mut self) {
+        let directions = vec![
+            Directions::Up,
+            Directions::Left,
+            Directions::Right,
+            Directions::Down,
+        ];
+        match directions.choose(&mut rand::thread_rng()) {
+            Some(d) => match d {
+                Directions::Up => {
+                    if self.y + 1 < NUM_ROWS {
+                        self.y = ((self.y as i32) - 1) as usize;
+                    }
+                }
+                Directions::Down => {
+                    if self.y - 1 > 0 {
+                        self.y = ((self.y as i32) + 1) as usize;
+                    }
+                }
+                Directions::Left => {
+                    if self.x - 1 > 0 {
+                        self.x = ((self.x as i32) - 1) as usize;
+                    }
+                }
+                Directions::Right => {
+                    if self.x + 1 < NUM_COLS {
+                        self.x = ((self.x as i32) + 1) as usize;
+                    }
+                }
+            },
+            None => (),
+        };
+    }
+}
+
 pub struct Monsters {
     pub enemies: Arc<Mutex<Vec<Monster>>>,
     monsters_lookup: Vec<Monster>,
@@ -76,38 +112,7 @@ impl Monsters {
             let enemies_lock = Arc::clone(&self.enemies);
             let mut enemies = enemies_lock.lock().unwrap();
             for monster in enemies.iter_mut() {
-                let directions = vec![
-                    Directions::Up,
-                    Directions::Left,
-                    Directions::Right,
-                    Directions::Down,
-                ];
-                //TODO move it into monster case itself
-                match directions.choose(&mut rand::thread_rng()) {
-                    Some(d) => match d {
-                        Directions::Up => {
-                            if monster.y + 1 < NUM_ROWS {
-                                monster.y = ((monster.y as i32) - 1) as usize;
-                            }
-                        }
-                        Directions::Down => {
-                            if monster.y - 1 > 0 {
-                                monster.y = ((monster.y as i32) + 1) as usize;
-                            }
-                        }
-                        Directions::Left => {
-                            if monster.x - 1 > 0 {
-                                monster.x = ((monster.x as i32) - 1) as usize;
-                            }
-                        }
-                        Directions::Right => {
-                            if monster.x + 1 < NUM_COLS {
-                                monster.x = ((monster.x as i32) + 1) as usize;
-                            }
-                        }
-                    },
-                    None => (),
-                };
+                monster.walk();
             }
             return true;
         }
