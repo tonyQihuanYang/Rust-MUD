@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use crate::{
-    frame::Drawable, monsters::Monsters, profile::Profile, shot::Shot, Directions, NUM_COLS,
-    NUM_ROWS,
+    frame::Drawable, monsters::monsters::Monsters, profile::Profile, shot::Shot, Directions,
+    NUM_COLS, NUM_ROWS,
 };
 
 pub struct Player {

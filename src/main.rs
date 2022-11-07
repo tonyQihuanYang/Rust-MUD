@@ -6,7 +6,7 @@ use crossterm::{
 };
 use invaders::{
     frame::{self, clear_monster_list, new_frame, Drawable},
-    monsters::Monsters,
+    monsters::monsters::Monsters,
     player::Player,
     profile::Profile,
     render::{self},

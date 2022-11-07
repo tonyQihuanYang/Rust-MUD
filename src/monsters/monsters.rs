@@ -1,12 +1,10 @@
+use super::monster::Monster;
 use crate::{
     frame::{Drawable, Frame},
-    Directions, MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
+    MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
 };
-use rand::seq::SliceRandom;
-use rand::thread_rng;
 use rusty_time::prelude::Timer;
-use serde::Deserialize;
-use std::{cmp::max, time::Duration};
+use std::time::Duration;
 use std::{
     sync::{Arc, Mutex},
     thread,
@@ -34,53 +32,6 @@ const MONSTERS_JSON: &str = r#"
               }
             ]
         "#;
-
-#[derive(Deserialize, Clone, Debug)]
-pub struct Monster {
-    pub id: u8,
-    pub name: String,
-    health: u64,
-    pub x: usize,
-    pub y: usize,
-    pub exp: u64,
-    respawn_time: u64,
-}
-
-impl Monster {
-    pub fn walk(&mut self) {
-        let directions = vec![
-            Directions::Up,
-            Directions::Left,
-            Directions::Right,
-            Directions::Down,
-        ];
-        match directions.choose(&mut rand::thread_rng()) {
-            Some(d) => match d {
-                Directions::Up => {
-                    if self.y + 1 < NUM_ROWS {
-                        self.y = ((self.y as i32) + 1) as usize;
-                    }
-                }
-                Directions::Down => {
-                    if self.y - 1 > 0 {
-                        self.y = ((self.y as i32) - 1) as usize;
-                    }
-                }
-                Directions::Left => {
-                    if self.x - 1 > 0 {
-                        self.x = ((self.x as i32) - 1) as usize;
-                    }
-                }
-                Directions::Right => {
-                    if self.x + 1 < NUM_COLS {
-                        self.x = ((self.x as i32) + 1) as usize;
-                    }
-                }
-            },
-            None => (),
-        };
-    }
-}
 
 pub struct Monsters {
     pub enemies: Arc<Mutex<Vec<Monster>>>,
@@ -147,10 +98,15 @@ impl Monsters {
             .iter()
             .position(|invader| (invader.x == x) && (invader.y == y))
         {
-            let enemy_killed = enemies[idx].clone();
-            enemies.remove(idx.clone());
-            self.respawn(idx);
-            Some(enemy_killed)
+            enemies[idx].be_attacked(5);
+            if enemies[idx].is_dead() {
+                let enemy_killed = enemies[idx].clone();
+                enemies.remove(idx.clone());
+                self.respawn(idx);
+                Some(enemy_killed)
+            } else {
+                None
+            }
         } else {
             None
         }

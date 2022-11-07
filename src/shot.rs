@@ -8,6 +8,7 @@ use crate::{Directions, NUM_COLS, NUM_ROWS};
 pub struct Shot {
     pub x: usize,
     pub y: usize,
+    pub attach_damage: u64,
     pub direction: Directions,
     pub exploading: bool,
     frame: usize,
@@ -19,6 +20,7 @@ impl Shot {
         Self {
             x,
             y,
+            attach_damage: 10,
             direction,
             exploading: false,
             frame: 4,
