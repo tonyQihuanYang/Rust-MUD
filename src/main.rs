@@ -40,9 +40,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // audio.play("startup");
 
-    // Render loop in a separate thread
+    // Render loop
     let (render_tx, render_rx) = mpsc::channel();
-    let render_handle = std::thread::spawn(move || {
+    let render_handle = thread::spawn(move || {
         let mut last_frame = frame::new_frame();
         let mut stdout = io::stdout();
         render::render(&mut stdout, &last_frame, &last_frame, true);
@@ -56,23 +56,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    // Game loop
+    // Game message loop
+    let (game_tx, game_rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+    let mut log = Section::new(LOG_X_START, LOG_X_END, LOG_Y_START, LOG_Y_END);
+    let mut _log = log.clone();
+    let game_handle = thread::spawn(move || {
+        for msg in game_rx {
+            _log.add_message(msg);
+        }
+    });
 
-    let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+    // render_handle.join().unwrap();
+    // game_handle.join().unwrap();
+
+    // Game loop
     let mut player = Player::new();
     let mut instant = Instant::now();
-    let mut monsters = Monsters::new(tx.clone());
-    let mut log = Section::new(LOG_X_START, LOG_X_END, LOG_Y_START, LOG_Y_END);
-    let profile = Profile::new();
-
-    {
-        let mut log = log.clone();
-        thread::spawn(move || {
-            for msg in rx {
-                log.add_message(msg);
-            }
-        });
-    }
+    let mut monsters = Monsters::new(game_tx.clone());
     'gameloop: loop {
         // per-frame init
         let mut curr_frame = new_frame();
@@ -94,15 +94,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                         }
                     }
                     KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
+                        // audio.play("lose");
                         break 'gameloop;
                     }
                     _ => {}
                 }
             }
         }
-        // while let Ok(msg) = rx.recv() {
-        // }
 
         // Updates
         player.update(delta);
@@ -111,7 +109,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         if player.detect_hits(&mut monsters) {
-            log.add_str("detect_hits");
             audio.play("explode");
             clear_monster_list(&mut curr_frame);
         }
@@ -122,7 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         let _ = render_tx.send(curr_frame);
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(16));
 
         // win or lose ?
         // if monsters.all_killed() {
@@ -137,7 +134,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     //Clean up
     drop(render_tx);
-    render_handle.join().unwrap();
+    drop(game_tx);
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;

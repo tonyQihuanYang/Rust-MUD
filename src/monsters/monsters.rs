@@ -97,15 +97,21 @@ impl Monsters {
     pub fn kill_monster_at(&mut self, x: usize, y: usize) -> Option<Monster> {
         let enemies_lock = Arc::clone(&self.enemies);
         let mut enemies = enemies_lock.lock().unwrap();
+
         if let Some(idx) = enemies
             .iter()
-            .position(|monster| (monster.x == x) && (monster.y == y))
+            .position(|monster| !monster.is_dead() && (monster.x == x) && (monster.y == y))
         {
-            self.tx.send("GETTING ATTACK".to_string()).unwrap();
-            enemies[idx].be_attacked(1);
+            self.tx
+                .send(format!("Due {} damage to {}", 20, enemies[idx].name))
+                .unwrap();
+            enemies[idx].be_attacked(20);
             if enemies[idx].is_dead() {
                 let enemy_killed = enemies[idx].clone();
                 enemies.remove(idx.clone());
+                self.tx
+                    .send(format!("Killed {}...", enemy_killed.name))
+                    .unwrap();
                 self.respawn(idx);
                 Some(enemy_killed)
             } else {

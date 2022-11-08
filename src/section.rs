@@ -1,5 +1,6 @@
 use crate::frame::Drawable;
 use crate::frame::Frame;
+use std::sync::{Arc, Mutex};
 /**
  * -------  ROW  -----
  * -------  ROW  -----
@@ -14,7 +15,8 @@ pub struct Section {
     pub x_end: usize,
     pub y_start: usize,
     pub y_end: usize,
-    pub messages: Vec<String>,
+    // pub messages: Vec<String>,
+    pub messages: Arc<Mutex<Vec<String>>>,
 }
 
 impl Section {
@@ -24,7 +26,7 @@ impl Section {
             x_end,
             y_start,
             y_end,
-            messages: Vec::with_capacity(y_end - y_start - 1),
+            messages: Arc::new(Mutex::new(Vec::with_capacity(y_end - y_start - 1))),
         }
     }
 
@@ -38,10 +40,13 @@ impl Section {
 
     pub fn add_message(&mut self, message: String) {
         let capacity = self.get_capacity();
-        if self.messages.len() == capacity {
-            self.messages.remove(capacity - 1);
+        let messages_lock = Arc::clone(&self.messages);
+        let mut messages = messages_lock.lock().unwrap();
+
+        if messages.len() == capacity {
+            messages.remove(capacity - 1);
         }
-        self.messages.insert(0, message);
+        messages.insert(0, message);
     }
 
     pub fn draw_outline(&mut self, frame: &mut Frame) {
@@ -55,11 +60,23 @@ impl Section {
             frame[self.x_end - 1][y] = "|".to_string();
         }
     }
+
+    //FIXME: Not cleaning...
+    pub fn clear(&self, frame: &mut Frame) {
+        for x in self.x_start + 1..self.x_end - 1 {
+            for y in self.y_start + 2..self.y_end - 1 {
+                frame[x][y] = "".to_string();
+            }
+        }
+    }
 }
 
 impl Drawable for Section {
     fn draw(&self, frame: &mut Frame) {
-        for (index, msg) in self.messages.iter().enumerate() {
+        self.clear(frame);
+        let messages_lock = Arc::clone(&self.messages);
+        let messages = messages_lock.lock().unwrap();
+        for (index, msg) in messages.iter().enumerate() {
             frame[self.x_start + 1][self.y_start + 1 + index] = msg.clone();
         }
     }
