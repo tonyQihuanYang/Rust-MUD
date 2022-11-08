@@ -11,7 +11,7 @@ pub struct Shot {
     pub attach_damage: u64,
     pub direction: Directions,
     pub exploading: bool,
-    frame: usize,
+    frame: u8,
     timer: Timer,
 }
 
@@ -31,30 +31,34 @@ impl Shot {
     pub fn update(&mut self, delta: Duration) {
         self.timer.update(delta);
         if self.timer.ready && !self.exploading {
-            match self.direction {
-                Directions::Up => {
-                    if self.y < NUM_ROWS {
-                        self.y -= 1;
+            if self.frame == 0 {
+                self.explode();
+            } else {
+                match self.direction {
+                    Directions::Up => {
+                        if self.y < NUM_ROWS {
+                            self.y -= 1;
+                        }
                     }
-                }
-                Directions::Down => {
-                    if self.y > 0 {
-                        self.y += 1;
+                    Directions::Down => {
+                        if self.y > 0 {
+                            self.y += 1;
+                        }
                     }
-                }
-                Directions::Left => {
-                    if self.x > 0 {
-                        self.x -= 1;
+                    Directions::Left => {
+                        if self.x > 0 {
+                            self.x -= 1;
+                        }
                     }
-                }
-                Directions::Right => {
-                    if self.x < NUM_COLS {
-                        self.x += 1;
+                    Directions::Right => {
+                        if self.x < NUM_COLS {
+                            self.x += 1;
+                        }
                     }
-                }
-            };
-            self.frame -= 1;
-            self.timer.reset();
+                };
+                self.frame -= 1;
+                self.timer.reset();
+            }
         }
     }
 

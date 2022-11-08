@@ -4,6 +4,7 @@ use crate::{
     MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
 };
 use rusty_time::prelude::Timer;
+use std::sync::mpsc::Sender;
 use std::time::Duration;
 use std::{
     sync::{Arc, Mutex},
@@ -35,18 +36,20 @@ const MONSTERS_JSON: &str = r#"
 
 pub struct Monsters {
     pub enemies: Arc<Mutex<Vec<Monster>>>,
+    pub tx: Sender<String>,
     monsters_lookup: Vec<Monster>,
     move_timer: Timer,
     direction: i32,
 }
 
 impl Monsters {
-    pub fn new() -> Self {
+    pub fn new(tx: Sender<String>) -> Self {
         Self {
             enemies: Arc::new(Mutex::new(serde_json::from_str(MONSTERS_JSON).unwrap())),
             monsters_lookup: serde_json::from_str(MONSTERS_JSON).unwrap(),
             move_timer: Timer::from_millis(500),
             direction: 1,
+            tx,
         }
     }
 
@@ -96,9 +99,10 @@ impl Monsters {
         let mut enemies = enemies_lock.lock().unwrap();
         if let Some(idx) = enemies
             .iter()
-            .position(|invader| (invader.x == x) && (invader.y == y))
+            .position(|monster| (monster.x == x) && (monster.y == y))
         {
-            enemies[idx].be_attacked(5);
+            self.tx.send("GETTING ATTACK".to_string()).unwrap();
+            enemies[idx].be_attacked(1);
             if enemies[idx].is_dead() {
                 let enemy_killed = enemies[idx].clone();
                 enemies.remove(idx.clone());

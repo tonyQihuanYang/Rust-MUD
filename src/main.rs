@@ -6,14 +6,22 @@ use crossterm::{
 };
 use invaders::{
     frame::{self, clear_monster_list, new_frame, Drawable},
-    monsters::monsters::Monsters,
+    monsters::{self, monsters::Monsters},
     player::Player,
     profile::Profile,
     render::{self},
+    section::Section,
+    LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START,
 };
 use rusty_audio::Audio;
 use std::time::Duration;
-use std::{error::Error, io, sync::mpsc, thread, time::Instant};
+use std::{
+    error::Error,
+    io,
+    sync::mpsc::{self, Receiver, Sender},
+    thread,
+    time::Instant,
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -50,13 +58,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Game loop
 
+    let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
     let mut player = Player::new();
     let mut instant = Instant::now();
-    let mut monsters = Monsters::new();
+    let mut monsters = Monsters::new(tx.clone());
+    let mut log = Section::new(LOG_X_START, LOG_X_END, LOG_Y_START, LOG_Y_END);
     let profile = Profile::new();
+
+    {
+        let mut log = log.clone();
+        thread::spawn(move || {
+            for msg in rx {
+                log.add_message(msg);
+            }
+        });
+    }
     'gameloop: loop {
         // per-frame init
         let mut curr_frame = new_frame();
+        log.draw_outline(&mut curr_frame);
         let delta = instant.elapsed();
         instant = Instant::now();
 
@@ -81,6 +101,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
         }
+        // while let Ok(msg) = rx.recv() {
+        // }
 
         // Updates
         player.update(delta);
@@ -89,11 +111,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         if player.detect_hits(&mut monsters) {
+            log.add_str("detect_hits");
             audio.play("explode");
             clear_monster_list(&mut curr_frame);
         }
 
-        let drawables: Vec<&dyn Drawable> = vec![&player, &monsters];
+        let drawables: Vec<&dyn Drawable> = vec![&player, &monsters, &log];
         for drawable in drawables {
             drawable.draw(&mut curr_frame);
         }

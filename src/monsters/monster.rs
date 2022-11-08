@@ -17,7 +17,9 @@ impl Monster {
     pub fn is_dead(&self) -> bool {
         self.health == 0
     }
+
     pub fn be_attacked(&mut self, damage: u64) {
+        // println!("{} - {}!", self.health, damage);
         if self.health > damage {
             self.health -= damage;
         } else {
