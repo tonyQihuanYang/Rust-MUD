@@ -3,11 +3,10 @@ use std::time::Duration;
 use rusty_time::prelude::Timer;
 
 use crate::frame::{Drawable, Frame, FrameMsg};
-use crate::{Directions, NUM_COLS, NUM_ROWS};
+use crate::{position::Position, Directions, NUM_COLS, NUM_ROWS};
 
 pub struct Shot {
-    pub x: usize,
-    pub y: usize,
+    pub position: Position,
     pub attach_damage: u64,
     pub direction: Directions,
     pub exploading: bool,
@@ -18,8 +17,7 @@ pub struct Shot {
 impl Shot {
     pub fn new(x: usize, y: usize, direction: Directions) -> Self {
         Self {
-            x,
-            y,
+            position: Position::new(x, y, None),
             attach_damage: 10,
             direction,
             exploading: false,
@@ -36,24 +34,16 @@ impl Shot {
             } else {
                 match self.direction {
                     Directions::Up => {
-                        if self.y < NUM_ROWS {
-                            self.y -= 1;
-                        }
+                        self.position.move_up();
                     }
                     Directions::Down => {
-                        if self.y > 0 {
-                            self.y += 1;
-                        }
+                        self.position.move_down();
                     }
                     Directions::Left => {
-                        if self.x > 0 {
-                            self.x -= 1;
-                        }
+                        self.position.move_left();
                     }
                     Directions::Right => {
-                        if self.x < NUM_COLS {
-                            self.x += 1;
-                        }
+                        self.position.move_right();
                     }
                 };
                 self.frame -= 1;
@@ -70,10 +60,10 @@ impl Shot {
     pub fn dead(&self) -> bool {
         (self.exploading && self.timer.ready)
             || self.frame == 0
-            || self.y == 0
-            || self.x == 0
-            || self.y == NUM_ROWS - 1
-            || self.x == NUM_COLS - 1
+            || self.position.y == 0
+            || self.position.x == 0
+            || self.position.y == NUM_ROWS - 1
+            || self.position.x == NUM_COLS - 1
     }
 }
 
@@ -81,16 +71,16 @@ impl Drawable for Shot {
     fn draw(&self, frame: &mut Frame) {
         match self.direction {
             Directions::Up => {
-                frame[self.x][self.y] = FrameMsg::Str(" ͡");
+                frame[self.position.x][self.position.y] = FrameMsg::Str(" ͡");
             }
             Directions::Down => {
-                frame[self.x][self.y] = FrameMsg::Str(" ͝");
+                frame[self.position.x][self.position.y] = FrameMsg::Str(" ͝");
             }
             Directions::Left => {
-                frame[self.x][self.y] = FrameMsg::Str("(");
+                frame[self.position.x][self.position.y] = FrameMsg::Str("(");
             }
             Directions::Right => {
-                frame[self.x][self.y] = FrameMsg::Str(")");
+                frame[self.position.x][self.position.y] = FrameMsg::Str(")");
             }
         }
     }

@@ -1,6 +1,7 @@
 use crate::{
     frame::{Drawable, FrameMsg},
     monsters::monsters::Monsters,
+    position::{Bound, Position},
     profile::Profile,
     shot::Shot,
     Directions, NUM_COLS, NUM_ROWS,
@@ -9,8 +10,7 @@ use std::time::Duration;
 
 pub struct Player {
     profile: Profile,
-    x: usize,
-    y: usize,
+    position: Position,
     shots: Vec<Shot>,
 }
 
@@ -18,42 +18,46 @@ impl Player {
     pub fn new() -> Self {
         Self {
             profile: Profile::new(),
-            x: NUM_COLS / 2,
-            y: NUM_ROWS - 1,
+            position: Position::new(
+                NUM_COLS / 2,
+                NUM_ROWS - 1,
+                Some(Bound::new(0, NUM_COLS, 0, NUM_ROWS)),
+            ),
             shots: Vec::new(),
         }
     }
     pub fn move_up(&mut self) {
-        if self.y > 0 {
-            self.y -= 1;
-        }
+        self.position.move_up();
     }
     pub fn move_down(&mut self) {
-        if self.y < NUM_ROWS - 1 {
-            self.y += 1;
-        }
+        self.position.move_down();
     }
 
     pub fn move_left(&mut self) {
-        if self.x > 0 {
-            self.x -= 1;
-        }
+        self.position.move_left();
     }
 
     pub fn move_right(&mut self) {
-        if self.x < NUM_COLS - 1 {
-            self.x += 1;
-        }
+        self.position.move_right();
     }
 
     pub fn shoot(&mut self) -> bool {
         if self.shots.len() < 5 {
-            self.shots
-                .push(Shot::new(self.x, self.y - 1, Directions::Up));
-            self.shots
-                .push(Shot::new(self.x + 1, self.y, Directions::Right));
-            self.shots
-                .push(Shot::new(self.x - 1, self.y, Directions::Left));
+            self.shots.push(Shot::new(
+                self.position.x,
+                self.position.y - 1,
+                Directions::Up,
+            ));
+            self.shots.push(Shot::new(
+                self.position.x + 1,
+                self.position.y,
+                Directions::Right,
+            ));
+            self.shots.push(Shot::new(
+                self.position.x - 1,
+                self.position.y,
+                Directions::Left,
+            ));
             return true;
         }
         {
@@ -73,7 +77,7 @@ impl Player {
 
         for shot in self.shots.iter_mut() {
             if !shot.exploading {
-                match monsters.kill_monster_at(shot.x, shot.y) {
+                match monsters.kill_monster_at(shot.position.x, shot.position.y) {
                     Some(monster_killed) => {
                         self.profile.gain_exp(monster_killed.exp);
                         hit_something = true;
@@ -93,7 +97,7 @@ impl Drawable for Player {
         for shot in self.shots.iter() {
             shot.draw(frame);
         }
-        frame[self.x][self.y] = FrameMsg::Str("A");
+        frame[self.position.x][self.position.y] = FrameMsg::Str("A");
         self.profile.draw(frame);
     }
 }
