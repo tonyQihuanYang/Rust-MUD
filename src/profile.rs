@@ -1,4 +1,7 @@
-use crate::{frame::Drawable, PROFILE_X};
+use crate::{
+    frame::{Drawable, FrameMsg},
+    PROFILE_X,
+};
 pub struct Profile {
     pub id: u8,
     pub exp: u64,
@@ -21,7 +24,7 @@ impl Profile {
 
 impl Drawable for Profile {
     fn draw(&self, frame: &mut crate::frame::Frame) {
-        frame[PROFILE_X][0] = self.name.clone();
-        frame[PROFILE_X][1] = self.exp.to_string();
+        frame[PROFILE_X][0] = FrameMsg::String(self.name.clone());
+        frame[PROFILE_X][1] = FrameMsg::String(self.exp.to_string());
     }
 }

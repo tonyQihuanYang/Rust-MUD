@@ -1,4 +1,4 @@
-use crate::frame::Frame;
+use crate::frame::{to_string, Frame, FrameMsg};
 use crossterm::{
     cursor::MoveTo,
     style::{style, Color, SetBackgroundColor, SetForegroundColor},
@@ -15,11 +15,24 @@ pub fn render(stdout: &mut Stdout, last_frame: &Frame, curr_frame: &Frame, force
         stdout.queue(SetForegroundColor(Color::White)).unwrap();
     }
 
-    for(x, col) in curr_frame.iter().enumerate() {
-        for (y,s) in col.iter().enumerate() {
-            if *s != last_frame[x][y] || force {
+    for (x, col) in curr_frame.iter().enumerate() {
+        for (y, s) in col.iter().enumerate() {
+            if to_string(s) != to_string(&(last_frame[x][y])) || force {
                 stdout.queue(MoveTo(x as u16, y as u16)).unwrap();
-                print!("{}", style(s).with(Color::Blue).on(Color::Black));
+                match s {
+                    FrameMsg::String(msg) => {
+                        print!("{}", msg);
+                    }
+                    FrameMsg::Str(msg) => {
+                        print!("{}", msg);
+                    }
+                    FrameMsg::StyledStr(msg) => {
+                        print!("{}", msg);
+                    }
+                    FrameMsg::StyledString(msg) => {
+                        print!("{}", msg);
+                    }
+                }
             }
         }
     }

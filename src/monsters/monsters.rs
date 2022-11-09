@@ -1,6 +1,6 @@
 use super::monster::Monster;
 use crate::{
-    frame::{Drawable, Frame},
+    frame::{Drawable, Frame, FrameMsg},
     MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
 };
 use rusty_time::prelude::Timer;
@@ -128,9 +128,12 @@ impl Drawable for Monsters {
         let enemies = Arc::clone(&self.enemies);
         let data = enemies.lock().unwrap();
         for (index, monster) in data.iter().enumerate() {
-            frame[monster.x][monster.y] = monster.id.to_string();
-            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] =
-                format!("{}(HP:{})", monster.name.clone(), monster.health.clone());
+            frame[monster.x][monster.y] = FrameMsg::String(monster.id.to_string());
+            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] = FrameMsg::String(format!(
+                "{}(HP:{})",
+                monster.name.clone(),
+                monster.health.clone()
+            ));
         }
     }
 }

@@ -1,9 +1,11 @@
-use std::time::Duration;
-
 use crate::{
-    frame::Drawable, monsters::monsters::Monsters, profile::Profile, shot::Shot, Directions,
-    NUM_COLS, NUM_ROWS,
+    frame::{Drawable, FrameMsg},
+    monsters::monsters::Monsters,
+    profile::Profile,
+    shot::Shot,
+    Directions, NUM_COLS, NUM_ROWS,
 };
+use std::time::Duration;
 
 pub struct Player {
     profile: Profile,
@@ -91,8 +93,7 @@ impl Drawable for Player {
         for shot in self.shots.iter() {
             shot.draw(frame);
         }
-        frame[self.x][self.y] = "A".to_string();
+        frame[self.x][self.y] = FrameMsg::Str("A");
         self.profile.draw(frame);
     }
 }
-

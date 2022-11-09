@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use rusty_time::prelude::Timer;
 
-use crate::frame::{Drawable, Frame};
+use crate::frame::{Drawable, Frame, FrameMsg};
 use crate::{Directions, NUM_COLS, NUM_ROWS};
 
 pub struct Shot {
@@ -81,18 +81,17 @@ impl Drawable for Shot {
     fn draw(&self, frame: &mut Frame) {
         match self.direction {
             Directions::Up => {
-                frame[self.x][self.y] = " ͡".to_string();
+                frame[self.x][self.y] = FrameMsg::Str(" ͡");
             }
             Directions::Down => {
-                frame[self.x][self.y] = " ͝".to_string();
+                frame[self.x][self.y] = FrameMsg::Str(" ͝");
             }
             Directions::Left => {
-                frame[self.x][self.y] = "(".to_string();
+                frame[self.x][self.y] = FrameMsg::Str("(");
             }
             Directions::Right => {
-                frame[self.x][self.y] = ")".to_string();
+                frame[self.x][self.y] = FrameMsg::Str(")");
             }
         }
     }
 }
-

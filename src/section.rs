@@ -1,5 +1,5 @@
-use crate::frame::Drawable;
-use crate::frame::Frame;
+use crate::frame::{Drawable, Frame, FrameMsg};
+use crossterm::style::Stylize;
 use std::sync::{Arc, Mutex};
 /**
  * -------  ROW  -----
@@ -51,21 +51,21 @@ impl Section {
 
     pub fn draw_outline(&mut self, frame: &mut Frame) {
         for x in self.x_start..self.x_end {
-            frame[x][self.y_start] = "-".to_string();
-            frame[x][self.y_end] = "-".to_string();
+            frame[x][self.y_start] = FrameMsg::Str("-");
+            frame[x][self.y_end] = FrameMsg::Str("-");
         }
 
         for y in (self.y_start + 1)..self.y_end {
-            frame[self.x_start][y] = "|".to_string();
-            frame[self.x_end - 1][y] = "|".to_string();
+            frame[self.x_start][y] = FrameMsg::Str("|");
+            frame[self.x_end - 1][y] = FrameMsg::Str("|");
         }
     }
 
     //FIXME: Not cleaning...
     pub fn clear(&self, frame: &mut Frame) {
         for x in self.x_start + 1..self.x_end - 1 {
-            for y in self.y_start + 2..self.y_end - 1 {
-                frame[x][y] = "".to_string();
+            for y in self.y_start + 1..self.y_end {
+                frame[x][y] = FrameMsg::Str(" ");
             }
         }
     }
@@ -77,7 +77,13 @@ impl Drawable for Section {
         let messages_lock = Arc::clone(&self.messages);
         let messages = messages_lock.lock().unwrap();
         for (index, msg) in messages.iter().enumerate() {
-            frame[self.x_start + 1][self.y_start + 1 + index] = msg.clone();
+            let char_vec: Vec<char> = (*msg).chars().collect();
+
+            for (char_i, c) in char_vec.iter().enumerate() {
+                // TODO ADD logic to swap line if too long
+                frame[self.x_start + 1 + char_i][self.y_start + 1 + index] =
+                    FrameMsg::StyledString(c.to_string().red());
+            }
         }
     }
 }
