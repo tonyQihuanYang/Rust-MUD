@@ -1,4 +1,4 @@
-use crate::{MONSTERS_LIST_X, MONSTERS_LIST_Y, WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crossterm::style::{StyledContent, Stylize};
 
 pub enum FrameMsg {
@@ -30,12 +30,6 @@ pub fn to_string(msg: &FrameMsg) -> std::string::String {
         FrameMsg::StyledString(val) => val.to_string(),
         FrameMsg::StyledStr(val) => val.to_string(),
     }
-}
-
-pub fn clear_monster_list(cur_frame: &mut Frame) {
-    // for y in MONSTERS_LIST_Y..WINDOW_HEIGHT {
-    //     cur_frame[MONSTERS_LIST_X][y] = " ".to_string().repeat(WINDOW_WIDTH - MONSTERS_LIST_X);
-    // }
 }
 
 pub trait Drawable {

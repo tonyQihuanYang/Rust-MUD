@@ -5,6 +5,7 @@ use std::{error::Error, sync::mpsc::Sender, thread};
 
 pub fn listen(game_tx: Sender<Cmds>) {
     let game_tx = game_tx.clone();
+    // Simulate Websocket connection or ...
     thread::spawn(move || user_actions(game_tx).unwrap());
 }
 

@@ -1,4 +1,4 @@
-use crate::frame::{Drawable, Frame, FrameMsg};
+use super::frame::{Drawable, Frame, FrameMsg};
 use crossterm::style::Stylize;
 use std::sync::{Arc, Mutex};
 /**
@@ -15,7 +15,6 @@ pub struct Section {
     pub x_end: usize,
     pub y_start: usize,
     pub y_end: usize,
-    // pub messages: Vec<String>,
     pub messages: Arc<Mutex<Vec<String>>>,
 }
 
@@ -28,10 +27,6 @@ impl Section {
             y_end,
             messages: Arc::new(Mutex::new(Vec::with_capacity(y_end - y_start - 1))),
         }
-    }
-
-    fn get_capacity(&self) -> usize {
-        self.y_end - self.y_start - 1
     }
 
     pub fn add_str(&mut self, str: &str) {
@@ -62,18 +57,28 @@ impl Section {
     }
 
     //FIXME: Not cleaning...
-    pub fn clear(&self, frame: &mut Frame) {
+    pub fn clear_frame(&self, frame: &mut Frame) {
         for x in self.x_start + 1..self.x_end - 1 {
             for y in self.y_start + 1..self.y_end {
                 frame[x][y] = FrameMsg::Str(" ");
             }
         }
     }
+
+    pub fn clear_messages(&self) {
+        let messages_lock = Arc::clone(&self.messages);
+        let mut messages = messages_lock.lock().unwrap();
+        messages.clear();
+    }
+
+    fn get_capacity(&self) -> usize {
+        self.y_end - self.y_start - 1
+    }
 }
 
 impl Drawable for Section {
     fn draw(&self, frame: &mut Frame) {
-        self.clear(frame);
+        self.clear_frame(frame);
         let messages_lock = Arc::clone(&self.messages);
         let messages = messages_lock.lock().unwrap();
         for (index, msg) in messages.iter().enumerate() {

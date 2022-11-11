@@ -1,4 +1,4 @@
-use crate::frame::{to_string, Frame, FrameMsg};
+use super::frame::{to_string, Frame, FrameMsg};
 use crossterm::{
     cursor::MoveTo,
     style::{style, Color, SetBackgroundColor, SetForegroundColor},

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use rusty_time::prelude::Timer;
 
-use crate::frame::{Drawable, Frame, FrameMsg};
+use crate::ui::frame::{Drawable, Frame, FrameMsg};
 use crate::{position::Position, Directions, NUM_COLS, NUM_ROWS};
 
 pub struct Shot {

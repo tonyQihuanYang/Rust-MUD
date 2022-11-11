@@ -1,5 +1,5 @@
 use crate::{
-    frame::{Drawable, FrameMsg},
+    ui::frame::{Drawable, Frame, FrameMsg},
     PROFILE_X,
 };
 
@@ -25,7 +25,7 @@ impl Profile {
 }
 
 impl Drawable for Profile {
-    fn draw(&self, frame: &mut crate::frame::Frame) {
+    fn draw(&self, frame: &mut Frame) {
         frame[PROFILE_X][0] = FrameMsg::String(self.name.clone());
         frame[PROFILE_X][1] = FrameMsg::String(self.exp.to_string());
     }

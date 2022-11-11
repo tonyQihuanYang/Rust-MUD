@@ -1,22 +1,26 @@
 use crate::{
-    frame::{Drawable, FrameMsg},
+    commands::Cmds,
     monsters::monsters::Monsters,
     position::{Bound, Position},
     profile::Profile,
     shot::Shot,
+    ui::frame::{Drawable, Frame, FrameMsg},
     Directions, NUM_COLS, NUM_ROWS,
 };
+use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 pub struct Player {
+    game_log_tx: Sender<Cmds>,
     profile: Profile,
     position: Position,
     shots: Vec<Shot>,
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(game_log_tx: Sender<Cmds>) -> Self {
         Self {
+            game_log_tx,
             profile: Profile::new(),
             position: Position::new(
                 NUM_COLS / 2,
@@ -93,7 +97,7 @@ impl Player {
 }
 
 impl Drawable for Player {
-    fn draw(&self, frame: &mut crate::frame::Frame) {
+    fn draw(&self, frame: &mut Frame) {
         for shot in self.shots.iter() {
             shot.draw(frame);
         }

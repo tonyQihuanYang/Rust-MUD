@@ -1,6 +1,7 @@
 use super::monster::Monster;
 use crate::{
-    frame::{Drawable, Frame, FrameMsg},
+    commands::{Cmds, MonsterCmds},
+    ui::frame::{Drawable, Frame, FrameMsg},
     MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
 };
 use rusty_time::prelude::Timer;
@@ -35,21 +36,21 @@ const MONSTERS_JSON: &str = r#"
         "#;
 
 pub struct Monsters {
+    game_log_tx: Sender<Cmds>,
     pub enemies: Arc<Mutex<Vec<Monster>>>,
-    pub tx: Sender<String>,
     monsters_lookup: Vec<Monster>,
     move_timer: Timer,
     direction: i32,
 }
 
 impl Monsters {
-    pub fn new(tx: Sender<String>) -> Self {
+    pub fn new(game_log_tx: Sender<Cmds>) -> Self {
         Self {
+            game_log_tx,
             enemies: Arc::new(Mutex::new(serde_json::from_str(MONSTERS_JSON).unwrap())),
             monsters_lookup: serde_json::from_str(MONSTERS_JSON).unwrap(),
             move_timer: Timer::from_millis(500),
             direction: 1,
-            tx,
         }
     }
 
@@ -102,15 +103,15 @@ impl Monsters {
             .iter()
             .position(|monster| !monster.is_dead() && (monster.x == x) && (monster.y == y))
         {
-            self.tx
-                .send(format!("Due {} damage to {}", 20, enemies[idx].name))
+            self.game_log_tx
+                .send(Cmds::Monster(MonsterCmds::Damaged))
                 .unwrap();
             enemies[idx].be_attacked(20);
             if enemies[idx].is_dead() {
                 let enemy_killed = enemies[idx].clone();
                 enemies.remove(idx.clone());
-                self.tx
-                    .send(format!("Killed {}...", enemy_killed.name))
+                self.game_log_tx
+                    .send(Cmds::Monster(MonsterCmds::Dead))
                     .unwrap();
                 self.respawn(idx);
                 Some(enemy_killed)
@@ -129,11 +130,6 @@ impl Drawable for Monsters {
         let data = enemies.lock().unwrap();
         for (index, monster) in data.iter().enumerate() {
             frame[monster.x][monster.y] = FrameMsg::String(monster.id.to_string());
-            frame[MONSTERS_LIST_X][MONSTERS_LIST_Y as usize + index] = FrameMsg::String(format!(
-                "{}(HP:{})",
-                monster.name.clone(),
-                monster.health.clone()
-            ));
         }
     }
 }
