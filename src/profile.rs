@@ -2,6 +2,8 @@ use crate::{
     frame::{Drawable, FrameMsg},
     PROFILE_X,
 };
+
+#[derive(Clone, Debug)]
 pub struct Profile {
     pub id: u8,
     pub exp: u64,

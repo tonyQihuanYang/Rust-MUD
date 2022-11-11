@@ -1,27 +1,31 @@
 use crossterm::{
     cursor::{Hide, Show},
-    event::{self, Event, KeyCode},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 use invaders::{
+    commands::{format_cmd, Cmds, PlayerCmds, SystemCmds},
     frame::{self, clear_monster_list, new_frame, Drawable},
     monsters::{self, monsters::Monsters},
     player::Player,
     profile::Profile,
     render::{self},
     section::Section,
+    server::fake_server,
     LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START,
 };
 use rusty_audio::Audio;
-use std::time::Duration;
 use std::{
     error::Error,
     io,
-    sync::mpsc::{self, Receiver, Sender},
+    sync::{
+        mpsc::{self, Receiver, Sender},
+        Mutex,
+    },
     thread,
     time::Instant,
 };
+use std::{sync::Arc, time::Duration};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -57,23 +61,62 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     // Game message loop
-    let (game_tx, game_rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+    let (game_log_tx, game_log_rx): (Sender<String>, Receiver<String>) = mpsc::channel();
     let mut log = Section::new(LOG_X_START, LOG_X_END, LOG_Y_START, LOG_Y_END);
-    let mut _log = log.clone();
-    let game_handle = thread::spawn(move || {
-        for msg in game_rx {
-            _log.add_message(msg);
-        }
-    });
-
-    // render_handle.join().unwrap();
-    // game_handle.join().unwrap();
+    {
+        let mut log = log.clone();
+        thread::spawn(move || {
+            for msg in game_log_rx {
+                log.add_message(msg);
+            }
+        });
+    }
 
     // Game loop
-    let mut player = Player::new();
+    let running = Arc::new(Mutex::new(true));
+    let player = Arc::new(Mutex::new(Player::new()));
     let mut instant = Instant::now();
-    let mut monsters = Monsters::new(game_tx.clone());
-    'gameloop: loop {
+    let mut monsters = Monsters::new(game_log_tx.clone());
+    let (game_tx, game_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
+    {
+        fake_server::listen(game_tx.clone());
+        let mut log = log.clone();
+        let player_lock = Arc::clone(&player);
+        let running = Arc::clone(&running);
+        thread::spawn(move || {
+            for msg in game_rx {
+                let mut player = player_lock.lock().unwrap();
+                match msg.clone() {
+                    Cmds::System(SystemCmds::Quit) => {
+                        let mut game_running = running.lock().unwrap();
+                        *game_running = false;
+                    }
+                    Cmds::Player(player_cmd) => match player_cmd {
+                        PlayerCmds::MoveUp => {
+                            (*player).move_up();
+                        }
+                        PlayerCmds::MoveDown => {
+                            (*player).move_down();
+                        }
+                        PlayerCmds::MoveLeft => {
+                            (*player).move_left();
+                        }
+                        PlayerCmds::MoveRight => {
+                            (*player).move_right();
+                        }
+                        PlayerCmds::Attack => {
+                            (*player).shoot();
+                        }
+                    },
+                    _ => {}
+                }
+                log.add_message(format_cmd(msg).to_string());
+            }
+        });
+    }
+
+    let running = Arc::clone(&running);
+    while *running.lock().unwrap() {
         // per-frame init
         let mut curr_frame = new_frame();
         log.draw_outline(&mut curr_frame);
@@ -81,28 +124,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         instant = Instant::now();
 
         //input
-        while event::poll(Duration::default())? {
-            if let Event::Key(key_event) = event::read()? {
-                match key_event.code {
-                    KeyCode::Up => player.move_up(),
-                    KeyCode::Down => player.move_down(),
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Char(' ') | KeyCode::Enter => {
-                        if player.shoot() {
-                            audio.play("pew");
-                        }
-                    }
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        // audio.play("lose");
-                        break 'gameloop;
-                    }
-                    _ => {}
-                }
-            }
-        }
+        // while event::poll(Duration::default())? {
+        //     if let Event::Key(key_event) = event::read()? {
+        //         match key_event.code {
+        //             KeyCode::Up => player.move_up(),
+        //             KeyCode::Down => player.move_down(),
+        //             KeyCode::Left => player.move_left(),
+        //             KeyCode::Right => player.move_right(),
+        //             KeyCode::Char(' ') | KeyCode::Enter => {
+        //                 if player.shoot() {
+        //                     audio.play("pew");
+        //                 }
+        //             }
+        //             KeyCode::Esc | KeyCode::Char('q') => {
+        //                 // audio.play("lose");
+        //                 break 'gameloop;
+        //             }
+        //             _ => {}
+        //         }
+        //     }
+        // }
 
         // Updates
+
+        let player_lock = Arc::clone(&player);
+        let mut player = player_lock.lock().unwrap();
         player.update(delta);
         if monsters.update(delta) {
             audio.play("move");
@@ -113,28 +159,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             clear_monster_list(&mut curr_frame);
         }
 
-        let drawables: Vec<&dyn Drawable> = vec![&player, &monsters, &log];
+        let drawables: Vec<&dyn Drawable> = vec![&(*player), &monsters, &log];
         for drawable in drawables {
             drawable.draw(&mut curr_frame);
         }
 
         let _ = render_tx.send(curr_frame);
         thread::sleep(Duration::from_millis(16));
-
-        // win or lose ?
-        // if monsters.all_killed() {
-        //     audio.play("win");
-        //     break 'gameloop;
-        // }
-        // if monsters.reached_bottom() {
-        //     audio.play("lose");
-        //     break 'gameloop;
-        // }
     }
 
     //Clean up
     drop(render_tx);
-    drop(game_tx);
+    // drop(game_tx);
     audio.wait();
     stdout.execute(Show)?;
     stdout.execute(LeaveAlternateScreen)?;

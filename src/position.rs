@@ -7,7 +7,7 @@
  *  (0,10)
  */
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Bound {
     pub x_s: usize,
     pub x_e: usize,
@@ -33,7 +33,7 @@ impl Bound {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Position {
     pub x: usize,
     pub y: usize,

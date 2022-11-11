@@ -1,3 +1,4 @@
+pub mod commands;
 pub mod frame;
 pub mod monsters;
 pub mod player;
@@ -5,6 +6,7 @@ pub mod position;
 pub mod profile;
 pub mod render;
 pub mod section;
+pub mod server;
 pub mod shot;
 
 pub const WINDOW_HEIGHT: usize = 50;
