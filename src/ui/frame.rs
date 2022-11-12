@@ -1,6 +1,7 @@
 use crate::{WINDOW_HEIGHT, WINDOW_WIDTH};
 use crossterm::style::{StyledContent, Stylize};
 
+#[derive(Clone)]
 pub enum FrameMsg {
     String(String),
     Str(&'static str),

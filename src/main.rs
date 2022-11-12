@@ -4,12 +4,13 @@ use crossterm::{
     ExecutableCommand,
 };
 use invaders::{
-    commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds, SystemCmds},
+    commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds, SendCmds, SystemCmds},
     monsters::monsters::Monsters,
     player::Player,
     server::fake_server,
     ui::{
-        frame::{self, new_frame, Drawable},
+        frame::{self, new_frame, Drawable, Frame},
+        main::ui_loop,
         render::{self},
         section::Section,
     },
@@ -29,65 +30,19 @@ use std::{
 };
 use std::{sync::Arc, time::Duration};
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let mut audio = Audio::new();
-    audio.add("explode", "./sounds/explode.wav");
-    audio.add("lose", "./sounds/lose.wav");
-    audio.add("move", "./sounds/move.wav");
-    audio.add("pew", "./sounds/pew.wav");
-    audio.add("startup", "./sounds/startup.wav");
-    audio.add("win", "./sounds/win.wav");
+fn main() {
+    let render_tx = ui_loop();
+    game_loop(render_tx).unwrap();
+    println!("Exit main...");
+}
 
-    // Terminal
-    let mut stdout = io::stdout();
-    terminal::enable_raw_mode()?;
-    stdout.execute(EnterAlternateScreen)?;
-    stdout.execute(Hide).unwrap();
-
-    // audio.play("startup");
-
-    // Render loop
-    let (render_tx, render_rx) = mpsc::channel();
-    let render_handle = thread::spawn(move || {
-        let mut last_frame = frame::new_frame();
-        let mut stdout = io::stdout();
-        render::render(&mut stdout, &last_frame, &last_frame, true);
-        loop {
-            let curr_frame = match render_rx.recv() {
-                Ok(x) => x,
-                Err(_) => break,
-            };
-            render::render(&mut stdout, &last_frame, &curr_frame, false);
-            last_frame = curr_frame;
-        }
-    });
-
+fn game_loop(render_tx: Sender<Cmds>) -> Result<(), Box<dyn Error>> {
     // Game global-logs loop
     let (game_log_tx, game_log_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
-    let mut log_section = Section::new(LOG_X_START, LOG_X_END, LOG_Y_START, LOG_Y_END);
-    let mut monsters_section = Section::new(
-        MONSTERS_X_START,
-        MONSTERS_X_END,
-        MONSTERS_Y_START,
-        MONSTERS_Y_END,
-    );
     {
-        let mut log_section = log_section.clone();
-        let mut monsters_section = monsters_section.clone();
         thread::spawn(move || {
             for cmd in game_log_rx {
-                match cmd.clone() {
-                    Cmds::Monster(monster_cmd) => {
-                        monsters_section.clear_messages();
-                        match monster_cmd {
-                            MonsterCmds::Respwan => monsters_section.add_message("mm".to_string()),
-                            _ => {}
-                        }
-                    }
-                    _ => {}
-                }
-
-                log_section.add_message(format_cmd(cmd).to_string());
+                render_tx.send(cmd).unwrap();
             }
         });
     }
@@ -103,7 +58,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // play inputs
     {
         fake_server::listen(game_tx.clone());
-        // let game_log_tx = game_log_tx.clone();
         let player_lock = Arc::clone(&player);
         let running = Arc::clone(&running);
         thread::spawn(move || {
@@ -130,10 +84,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                         PlayerCmds::Attack => {
                             (*player).shoot();
                         }
+                        _ => (),
                     },
-                    _ => {}
+                    _ => (),
                 }
-                // game_log_tx.send(msg).unwrap();
             }
         });
     }
@@ -142,9 +96,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // game logic
     while *running.lock().unwrap() {
         // per-frame init
-        let mut curr_frame = new_frame();
-        log_section.draw_outline(&mut curr_frame);
-        monsters_section.draw_outline(&mut curr_frame);
         let delta = instant.elapsed();
         instant = Instant::now();
 
@@ -153,39 +104,30 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut player = player_lock.lock().unwrap();
         player.update(delta);
         if monsters.update(delta) {
-            audio.play("move");
+            // audio.play("move");
         }
 
         if player.detect_hits(&mut monsters) {
-            audio.play("explode");
+            // audio.play("explode");
         }
 
-        // {
-        //     let enemies = Arc::clone(&(monsters.enemies));
-        //     let data = enemies.lock().unwrap();
-        //     monsters_section.clear_messages();
-        //     for monster in (*data).iter() {
-        //         monsters_section.print_line(
-        //             format!("{}(HP:{})", monster.name.clone(), monster.health.clone()).to_string(),
-        //         );
-        //     }
-        // }
-        let drawables: Vec<&dyn Drawable> =
-            vec![&(*player), &monsters, &log_section, &monsters_section];
+        // Should remove this
+        // let drawables: Vec<&dyn SendCmds> = vec![&(*player), &monsters];
+        let drawables: Vec<&dyn SendCmds> = vec![&(*player)];
         for drawable in drawables {
-            drawable.draw(&mut curr_frame);
+            drawable.send();
         }
 
-        let _ = render_tx.send(curr_frame);
-        thread::sleep(Duration::from_millis(16));
+        // thread::sleep(Duration::from_millis(20));
+        // thread::sleep(Duration::from_millis(16));
     }
 
     //Clean up
-    drop(render_tx);
+    // drop(render_tx);
     // drop(game_tx);
-    audio.wait();
-    stdout.execute(Show)?;
-    stdout.execute(LeaveAlternateScreen)?;
+    // audio.wait();
+    // stdout.execute(Show)?;
+    // stdout.execute(LeaveAlternateScreen)?;
     println!("Exit...");
     Ok(())
 }

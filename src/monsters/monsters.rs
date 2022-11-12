@@ -1,8 +1,7 @@
 use super::monster::Monster;
 use crate::{
-    commands::{Cmds, MonsterCmds},
-    ui::frame::{Drawable, Frame, FrameMsg},
-    MONSTERS_LIST_X, MONSTERS_LIST_Y, NUM_COLS, NUM_ROWS,
+    commands::{Cmds, MonsterCmds, SendCmds},
+    position::Position,
 };
 use rusty_time::prelude::Timer;
 use std::sync::mpsc::Sender;
@@ -40,7 +39,6 @@ pub struct Monsters {
     pub enemies: Arc<Mutex<Vec<Monster>>>,
     monsters_lookup: Vec<Monster>,
     move_timer: Timer,
-    direction: i32,
 }
 
 impl Monsters {
@@ -50,7 +48,6 @@ impl Monsters {
             enemies: Arc::new(Mutex::new(serde_json::from_str(MONSTERS_JSON).unwrap())),
             monsters_lookup: serde_json::from_str(MONSTERS_JSON).unwrap(),
             move_timer: Timer::from_millis(500),
-            direction: 1,
         }
     }
 
@@ -77,22 +74,15 @@ impl Monsters {
             let mut enemies = enemies_lock.lock().unwrap();
             for monster in enemies.iter_mut() {
                 monster.walk();
+                self.game_log_tx
+                    .send(Cmds::Monster(MonsterCmds::Move(Position::new(
+                        monster.x, monster.y, None,
+                    ))))
+                    .unwrap();
             }
             return true;
         }
         false
-    }
-
-    pub fn all_killed(&self) -> bool {
-        let enemies_lock = Arc::clone(&self.enemies);
-        let enemies = enemies_lock.lock().unwrap();
-        enemies.is_empty()
-    }
-
-    pub fn reached_bottom(&self) -> bool {
-        let enemies_lock = Arc::clone(&self.enemies);
-        let enemies = enemies_lock.lock().unwrap();
-        enemies.iter().map(|invader| invader.y).max().unwrap_or(0) >= NUM_ROWS - 1
     }
 
     pub fn kill_monster_at(&mut self, x: usize, y: usize) -> Option<Monster> {
@@ -124,12 +114,16 @@ impl Monsters {
     }
 }
 
-impl Drawable for Monsters {
-    fn draw(&self, frame: &mut Frame) {
+impl SendCmds for Monsters {
+    fn send(&self) {
         let enemies = Arc::clone(&self.enemies);
         let data = enemies.lock().unwrap();
-        for (index, monster) in data.iter().enumerate() {
-            frame[monster.x][monster.y] = FrameMsg::String(monster.id.to_string());
+        for monster in data.iter() {
+            // self.game_log_tx
+            //     .send(Cmds::Monster(MonsterCmds::Move(Position::new(
+            //         monster.x, monster.y, None,
+            //     ))))
+            //     .unwrap();
         }
     }
 }

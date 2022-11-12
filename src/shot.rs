@@ -69,19 +69,19 @@ impl Shot {
 
 impl Drawable for Shot {
     fn draw(&self, frame: &mut Frame) {
-        match self.direction {
-            Directions::Up => {
-                frame[self.position.x][self.position.y] = FrameMsg::Str(" ͡");
-            }
-            Directions::Down => {
-                frame[self.position.x][self.position.y] = FrameMsg::Str(" ͝");
-            }
-            Directions::Left => {
-                frame[self.position.x][self.position.y] = FrameMsg::Str("(");
-            }
-            Directions::Right => {
-                frame[self.position.x][self.position.y] = FrameMsg::Str(")");
-            }
-        }
+        // match self.direction {
+        //     Directions::Up => {
+        //         frame[self.position.x][self.position.y] = FrameMsg::Str(" ͡");
+        //     }
+        //     Directions::Down => {
+        //         frame[self.position.x][self.position.y] = FrameMsg::Str(" ͝");
+        //     }
+        //     Directions::Left => {
+        //         frame[self.position.x][self.position.y] = FrameMsg::Str("(");
+        //     }
+        //     Directions::Right => {
+        //         frame[self.position.x][self.position.y] = FrameMsg::Str(")");
+        //     }
+        // }
     }
 }

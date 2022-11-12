@@ -1,4 +1,4 @@
-use crate::position::Position;
+use crate::position::{self, Position};
 
 #[derive(Clone)]
 pub enum Cmds {
@@ -9,6 +9,7 @@ pub enum Cmds {
 
 #[derive(Clone)]
 pub enum MonsterCmds {
+    Move(Position),
     Dead,
     Respwan,
     Damaged,
@@ -21,6 +22,7 @@ pub enum PlayerCmds {
     MoveUp,
     MoveDown,
     Attack,
+    Move(Position),
 }
 
 #[derive(Clone)]
@@ -29,22 +31,33 @@ pub enum SystemCmds {
     None,
 }
 
-pub fn format_cmd(cmd: Cmds) -> &'static str {
+pub fn format_cmd(cmd: &Cmds) -> Option<String> {
     match cmd {
-        Cmds::System(SystemCmds::Quit) => "Quit Game",
+        Cmds::System(SystemCmds::Quit) => Some(String::from("Quit Game")),
         Cmds::Player(player_cmd) => match player_cmd {
-            PlayerCmds::MoveUp => "Player Moved up",
-            PlayerCmds::MoveLeft => "Player Moved Left",
-            PlayerCmds::MoveDown => "Player Moved Down",
-            PlayerCmds::MoveRight => "Player Moved Right",
-            PlayerCmds::Attack => "Player Attack",
-            // _ => "Non-matched Player CMD",
+            // PlayerCmds::MoveUp => "Player Moved up",
+            // PlayerCmds::MoveLeft => "Player Moved Left",
+            // PlayerCmds::MoveDown => "Player Moved Down",
+            // PlayerCmds::MoveRight => "Player Moved Right",
+            // PlayerCmds::Attack => "Player Attack",
+            // PlayerCmds::Move(position) => {
+            //     Some(format!("Player Moved x:{} y:{}", position.x, position.y))
+            // }
+            _ => None,
         },
         Cmds::Monster(monster_cmd) => match monster_cmd {
-            MonsterCmds::Dead => "Monster Dead",
-            MonsterCmds::Damaged => "Monster Damaged",
-            MonsterCmds::Respwan => "Monster Respwan",
+            MonsterCmds::Move(position) => {
+                Some(format!("Monster Moved x:{} y:{}", position.x, position.y))
+            }
+            MonsterCmds::Dead => Some(String::from("Monster Dead")),
+            MonsterCmds::Damaged => Some(String::from("Monster Damaged")),
+            MonsterCmds::Respwan => Some(String::from("Monster Respwan")),
+            _ => None,
         },
-        _ => "Non-matched Cmd",
+        _ => None,
     }
+}
+
+pub trait SendCmds {
+    fn send(&self);
 }

@@ -1,5 +1,5 @@
 use crate::{Directions, NUM_COLS, NUM_ROWS};
-use rand::{seq::SliceRandom, thread_rng};
+use rand::seq::SliceRandom;
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]

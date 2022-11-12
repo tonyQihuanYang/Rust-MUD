@@ -1,10 +1,9 @@
 use crate::{
-    commands::Cmds,
+    commands::{Cmds, PlayerCmds, SendCmds},
     monsters::monsters::Monsters,
     position::{Bound, Position},
     profile::Profile,
     shot::Shot,
-    ui::frame::{Drawable, Frame, FrameMsg},
     Directions, NUM_COLS, NUM_ROWS,
 };
 use std::sync::mpsc::Sender;
@@ -32,17 +31,27 @@ impl Player {
     }
     pub fn move_up(&mut self) {
         self.position.move_up();
+        self.moved();
     }
     pub fn move_down(&mut self) {
         self.position.move_down();
+        self.moved();
     }
 
     pub fn move_left(&mut self) {
         self.position.move_left();
+        self.moved();
     }
 
     pub fn move_right(&mut self) {
         self.position.move_right();
+        self.moved();
+    }
+
+    pub fn moved(&self) {
+        self.game_log_tx
+            .send(Cmds::Player(PlayerCmds::Move(self.position.clone())))
+            .unwrap();
     }
 
     pub fn shoot(&mut self) -> bool {
@@ -96,12 +105,14 @@ impl Player {
     }
 }
 
-impl Drawable for Player {
-    fn draw(&self, frame: &mut Frame) {
-        for shot in self.shots.iter() {
-            shot.draw(frame);
-        }
-        frame[self.position.x][self.position.y] = FrameMsg::Str("A");
-        self.profile.draw(frame);
+impl SendCmds for Player {
+    fn send(&self) {
+        // Refactor it
+        // for shot in self.shots.iter() {
+        //     shot.draw(frame);
+        // }
+        // self.game_log_tx
+        //     .send(Cmds::Player(PlayerCmds::Move(self.position.clone())))
+        //     .unwrap();
     }
 }

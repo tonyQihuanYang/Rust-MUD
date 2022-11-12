@@ -1,7 +1,4 @@
-use crate::{
-    ui::frame::{Drawable, Frame, FrameMsg},
-    PROFILE_X,
-};
+use crate::commands::SendCmds;
 
 #[derive(Clone, Debug)]
 pub struct Profile {
@@ -24,9 +21,9 @@ impl Profile {
     }
 }
 
-impl Drawable for Profile {
-    fn draw(&self, frame: &mut Frame) {
-        frame[PROFILE_X][0] = FrameMsg::String(self.name.clone());
-        frame[PROFILE_X][1] = FrameMsg::String(self.exp.to_string());
+impl SendCmds for Profile {
+    fn send(&self) {
+        // frame[PROFILE_X][0] = FrameMsg::String(self.name.clone());
+        // frame[PROFILE_X][1] = FrameMsg::String(self.exp.to_string());
     }
 }

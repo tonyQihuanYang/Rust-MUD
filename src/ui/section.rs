@@ -1,3 +1,5 @@
+use crate::position::{self, Position};
+
 use super::frame::{Drawable, Frame, FrameMsg};
 use crossterm::style::Stylize;
 use std::sync::{Arc, Mutex};
@@ -9,13 +11,19 @@ use std::sync::{Arc, Mutex};
  *   |       |
  */
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
+pub struct SectionMsg {
+    value: String,
+    position: Option<Position>,
+}
+
+#[derive(Clone)]
 pub struct Section {
     pub x_start: usize,
     pub x_end: usize,
     pub y_start: usize,
     pub y_end: usize,
-    pub messages: Arc<Mutex<Vec<String>>>,
+    pub messages: Arc<Mutex<Vec<SectionMsg>>>,
 }
 
 impl Section {
@@ -30,10 +38,17 @@ impl Section {
     }
 
     pub fn add_str(&mut self, str: &str) {
-        self.add_message(str.to_string());
+        self.add_message(str.to_string(), None);
     }
 
-    pub fn add_message(&mut self, message: String) {
+    pub fn add_message(&mut self, message: String, position: Option<Position>) {
+        self.push(SectionMsg {
+            value: message,
+            position,
+        });
+    }
+
+    fn push(&self, value: SectionMsg) {
         let capacity = self.get_capacity();
         let messages_lock = Arc::clone(&self.messages);
         let mut messages = messages_lock.lock().unwrap();
@@ -41,10 +56,10 @@ impl Section {
         if messages.len() == capacity {
             messages.remove(capacity - 1);
         }
-        messages.insert(0, message);
+        messages.insert(0, value);
     }
 
-    pub fn draw_outline(&mut self, frame: &mut Frame) {
+    pub fn draw_outline(&self, frame: &mut Frame) {
         for x in self.x_start..self.x_end {
             frame[x][self.y_start] = FrameMsg::Str("-");
             frame[x][self.y_end] = FrameMsg::Str("-");
@@ -82,12 +97,16 @@ impl Drawable for Section {
         let messages_lock = Arc::clone(&self.messages);
         let messages = messages_lock.lock().unwrap();
         for (index, msg) in messages.iter().enumerate() {
-            let char_vec: Vec<char> = (*msg).chars().collect();
+            let char_vec: Vec<char> = (*msg).value.chars().collect();
 
-            for (char_i, c) in char_vec.iter().enumerate() {
-                // TODO ADD logic to swap line if too long
-                frame[self.x_start + 1 + char_i][self.y_start + 1 + index] =
-                    FrameMsg::StyledString(c.to_string().red());
+            if let Some(position) = (*msg).position.clone() {
+                frame[position.x][position.y] = FrameMsg::StyledString((*msg).value.clone().red());
+            } else {
+                for (char_i, c) in char_vec.iter().enumerate() {
+                    // TODO ADD logic to swap line if too long
+                    frame[self.x_start + 1 + char_i][self.y_start + 1 + index] =
+                        FrameMsg::StyledString(c.to_string().red());
+                }
             }
         }
     }
