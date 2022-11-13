@@ -14,7 +14,7 @@ use std::{
 const MONSTERS_JSON: &str = r#"
             [
               {
-                "id": 1,
+                "id": 10000,
                 "name": "Spider",
                 "health": 40, 
                 "x": 4,
@@ -23,7 +23,7 @@ const MONSTERS_JSON: &str = r#"
                 "respawn_time": 5000
               },
               {
-                "id": 2,
+                "id": 10001,
                 "name": "Budge Dragon",
                 "health": 80, 
                 "x": 8,
@@ -75,9 +75,10 @@ impl Monsters {
             for monster in enemies.iter_mut() {
                 monster.walk();
                 self.game_log_tx
-                    .send(Cmds::Monster(MonsterCmds::Move(Position::new(
-                        monster.x, monster.y, None,
-                    ))))
+                    .send(Cmds::Monster(MonsterCmds::Move(
+                        monster.id,
+                        Position::new(monster.x, monster.y, None),
+                    )))
                     .unwrap();
             }
             return true;

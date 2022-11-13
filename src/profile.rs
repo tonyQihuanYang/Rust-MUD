@@ -2,7 +2,7 @@ use crate::commands::SendCmds;
 
 #[derive(Clone, Debug)]
 pub struct Profile {
-    pub id: u8,
+    pub id: u32,
     pub exp: u64,
     pub name: String,
 }

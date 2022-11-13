@@ -10,8 +10,8 @@ use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 pub struct Player {
-    game_log_tx: Sender<Cmds>,
     profile: Profile,
+    game_log_tx: Sender<Cmds>,
     position: Position,
     shots: Vec<Shot>,
 }
@@ -50,7 +50,10 @@ impl Player {
 
     pub fn moved(&self) {
         self.game_log_tx
-            .send(Cmds::Player(PlayerCmds::Move(self.position.clone())))
+            .send(Cmds::Player(PlayerCmds::Move(
+                self.profile.id.clone(),
+                self.position.clone(),
+            )))
             .unwrap();
     }
 

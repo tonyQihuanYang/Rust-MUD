@@ -1,8 +1,3 @@
-use crossterm::{
-    cursor::{Hide, Show},
-    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
 use invaders::{
     commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds, SendCmds, SystemCmds},
     monsters::monsters::Monsters,
@@ -11,16 +6,12 @@ use invaders::{
     ui::{
         frame::{self, new_frame, Drawable, Frame},
         main::ui_loop,
-        render::{self},
-        section::Section,
     },
     LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START, MONSTERS_X_END, MONSTERS_X_START,
     MONSTERS_Y_END, MONSTERS_Y_START,
 };
-use rusty_audio::Audio;
 use std::{
     error::Error,
-    io,
     sync::{
         mpsc::{self, Receiver, Sender},
         Mutex,
@@ -48,7 +39,6 @@ fn game_loop(render_tx: Sender<Cmds>) -> Result<(), Box<dyn Error>> {
     }
 
     //  == Game loop ==
-
     let running = Arc::new(Mutex::new(true));
     let player = Arc::new(Mutex::new(Player::new(game_log_tx.clone())));
     let mut monsters = Monsters::new(game_log_tx.clone());
@@ -113,12 +103,11 @@ fn game_loop(render_tx: Sender<Cmds>) -> Result<(), Box<dyn Error>> {
 
         // Should remove this
         // let drawables: Vec<&dyn SendCmds> = vec![&(*player), &monsters];
-        let drawables: Vec<&dyn SendCmds> = vec![&(*player)];
-        for drawable in drawables {
-            drawable.send();
-        }
+        // let drawables: Vec<&dyn SendCmds> = vec![&(*player)];
+        // for drawable in drawables {
+        //     drawable.send();
+        // }
 
-        // thread::sleep(Duration::from_millis(20));
         // thread::sleep(Duration::from_millis(16));
     }
 

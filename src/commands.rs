@@ -9,7 +9,7 @@ pub enum Cmds {
 
 #[derive(Clone)]
 pub enum MonsterCmds {
-    Move(Position),
+    Move(u32, Position),
     Dead,
     Respwan,
     Damaged,
@@ -22,7 +22,7 @@ pub enum PlayerCmds {
     MoveUp,
     MoveDown,
     Attack,
-    Move(Position),
+    Move(u32, Position),
 }
 
 #[derive(Clone)]
@@ -40,15 +40,17 @@ pub fn format_cmd(cmd: &Cmds) -> Option<String> {
             // PlayerCmds::MoveDown => "Player Moved Down",
             // PlayerCmds::MoveRight => "Player Moved Right",
             // PlayerCmds::Attack => "Player Attack",
-            // PlayerCmds::Move(position) => {
-            //     Some(format!("Player Moved x:{} y:{}", position.x, position.y))
-            // }
+            PlayerCmds::Move(id, position) => Some(format!(
+                "Player {} Moved x:{} y:{}",
+                id, position.x, position.y
+            )),
             _ => None,
         },
         Cmds::Monster(monster_cmd) => match monster_cmd {
-            MonsterCmds::Move(position) => {
-                Some(format!("Monster Moved x:{} y:{}", position.x, position.y))
-            }
+            MonsterCmds::Move(id, position) => Some(format!(
+                "Monster {} Moved x:{} y:{}",
+                id, position.x, position.y
+            )),
             MonsterCmds::Dead => Some(String::from("Monster Dead")),
             MonsterCmds::Damaged => Some(String::from("Monster Damaged")),
             MonsterCmds::Respwan => Some(String::from("Monster Respwan")),

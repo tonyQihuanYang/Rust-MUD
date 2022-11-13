@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Monster {
-    pub id: u8,
+    pub id: u32,
     pub name: String,
     pub health: u64,
     pub x: usize,
@@ -19,7 +19,6 @@ impl Monster {
     }
 
     pub fn be_attacked(&mut self, damage: u64) {
-        // println!("{} - {}!", self.health, damage);
         if self.health > damage {
             self.health -= damage;
         } else {

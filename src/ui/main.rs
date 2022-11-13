@@ -1,11 +1,15 @@
-use crate::commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds};
+use crate::commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds, SystemCmds};
+use crate::ui::sections::{
+    messages_box::MessagesBox,
+    mini_map::{MiniMap, MiniMapItem},
+    ui_box::UiBoxMsg,
+};
 
 use super::{
     frame::{new_frame, Drawable, FrameMsg},
     render::{self},
-    section::Section,
-    LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START, MAP_X_END, MAP_X_START, MAP_Y_END, MAP_Y_START,
-    MONSTERS_X_END, MONSTERS_X_START, MONSTERS_Y_END, MONSTERS_Y_START,
+    LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START, MONSTERS_X_END, MONSTERS_X_START,
+    MONSTERS_Y_END, MONSTERS_Y_START,
 };
 use crossterm::{
     cursor::{Hide, Show},
@@ -14,14 +18,13 @@ use crossterm::{
 };
 use rusty_audio::Audio;
 use std::{
-    error::Error,
     io,
     sync::{
         mpsc::{self, Receiver, Sender},
         Arc, Mutex, RwLock,
     },
-    thread, time,
-    time::{Duration, Instant},
+    thread,
+    time::Duration,
 };
 
 pub fn ui_loop() -> Sender<Cmds> {
@@ -42,53 +45,39 @@ fn init_audio() -> Audio {
 }
 
 fn init_terminal() -> Sender<Cmds> {
-    let mut stdout = io::stdout();
-    terminal::enable_raw_mode().unwrap();
-    stdout.execute(EnterAlternateScreen).unwrap();
-    stdout.execute(Hide).unwrap();
-
-    // Render loop
     let (game_cmds_tx, game_cmds_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
+    // Render loop
     thread::spawn(move || {
-        let mut last_frame = new_frame();
-        let mut stdout = io::stdout();
-        let map_section = Arc::new(RwLock::new(Section::new(
-            MAP_X_START,
-            MAP_X_END,
-            MAP_Y_START,
-            MAP_Y_END,
-        )));
-        let log_section = Arc::new(RwLock::new(Section::new(
+        let is_running = Arc::new(RwLock::new(true));
+        let map_section = Arc::new(RwLock::new(MiniMap::new()));
+        let log_section = Arc::new(RwLock::new(MessagesBox::new(
             LOG_X_START,
             LOG_X_END,
             LOG_Y_START,
             LOG_Y_END,
         )));
-        let monsters_section = Section::new(
+        let monsters_section = MessagesBox::new(
             MONSTERS_X_START,
             MONSTERS_X_END,
             MONSTERS_Y_START,
             MONSTERS_Y_END,
         );
 
-        {
-            let log_lock = Arc::clone(&log_section);
-            let log = log_lock.read().unwrap();
-            (*log).draw_outline(&mut last_frame);
-        }
-        monsters_section.draw_outline(&mut last_frame);
-        render::render(&mut stdout, &last_frame, &last_frame, true);
-
+        let running_lock = Arc::clone(&is_running);
         let log_lock = Arc::clone(&log_section);
         let map_lock = Arc::clone(&map_section);
         thread::spawn(move || {
+            let mut stdout = io::stdout();
+            terminal::enable_raw_mode().unwrap();
+            stdout.execute(EnterAlternateScreen).unwrap();
+            stdout.execute(Hide).unwrap();
+            render::render(&mut stdout, &new_frame(), &new_frame(), true);
             let mut last_frame = new_frame();
-            loop {
+            let is_running = running_lock.read().unwrap();
+            while *is_running {
                 let mut curr_frame = new_frame();
                 {
                     let log_section = log_lock.read().unwrap();
-                    (*log_section).draw_outline(&mut curr_frame);
-                    monsters_section.draw_outline(&mut curr_frame);
                     let map = map_lock.read().unwrap();
                     let drawables: Vec<&dyn Drawable> =
                         vec![&(*log_section), &monsters_section, &(*map)];
@@ -101,6 +90,8 @@ fn init_terminal() -> Sender<Cmds> {
                 last_frame = curr_frame;
                 thread::sleep(Duration::from_millis(16));
             }
+            stdout.execute(Show).unwrap();
+            stdout.execute(LeaveAlternateScreen).unwrap();
         });
 
         loop {
@@ -110,38 +101,53 @@ fn init_terminal() -> Sender<Cmds> {
                 Ok(cmd) => {
                     {
                         if let Some(formated_msg) = format_cmd(&cmd) {
-                            let mut log_section = log_lock.write().unwrap();
-                            (*log_section).add_message(formated_msg, None);
+                            let log_section = log_lock.write().unwrap();
+                            (*log_section).show(&UiBoxMsg {
+                                value: FrameMsg::String(formated_msg),
+                                position: None,
+                            });
                         }
                     }
                     match cmd {
+                        Cmds::System(system_cmd) => match system_cmd {
+                            SystemCmds::Quit => {
+                                break;
+                            }
+                            _ => (),
+                        },
                         Cmds::Player(player_cmd) => match player_cmd {
-                            PlayerCmds::Move(position) => {
-                                let mut map = map_lock.write().unwrap();
-                                (*map).add_message(String::from("A"), Some(position));
+                            PlayerCmds::Move(id, position) => {
+                                let map = map_lock.write().unwrap();
+                                (*map).show(&MiniMapItem {
+                                    id,
+                                    icon: String::from("A"),
+                                    position,
+                                });
                             }
                             _ => (),
                         },
                         Cmds::Monster(monster_cmd) => match monster_cmd {
-                            MonsterCmds::Move(position) => {
-                                let mut map = map_lock.write().unwrap();
-                                (*map).add_message(String::from("M"), Some(position));
+                            MonsterCmds::Move(id, position) => {
+                                let map = map_lock.write().unwrap();
+                                (*map).show(&MiniMapItem {
+                                    id,
+                                    icon: String::from("M"),
+                                    position,
+                                });
                             }
                             _ => {}
                         },
-
                         _ => (),
                     };
                 }
                 Err(_) => break,
             };
         }
-    });
-    // ui_thread.join().unwrap();
 
-    // stdout.execute(Show).unwrap();
-    // stdout.execute(LeaveAlternateScreen).unwrap();
+        let running_lock = Arc::clone(&is_running);
+        let mut is_running = running_lock.write().unwrap();
+        *is_running = false;
+    });
     println!("Exit UI...");
     game_cmds_tx
-    // Ok(())
 }
