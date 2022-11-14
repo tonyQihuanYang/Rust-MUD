@@ -1,6 +1,6 @@
 use super::monster::Monster;
 use crate::{
-    commands::{Cmds, MonsterCmds, SendCmds},
+    commands::{Cmds, MonsterCmds},
     position::Position,
 };
 use rusty_time::prelude::Timer;
@@ -66,7 +66,7 @@ impl Monsters {
         });
     }
 
-    pub fn update(&mut self, delta: Duration) -> bool {
+    pub fn update(&mut self, delta: Duration) {
         self.move_timer.update(delta);
         if self.move_timer.ready {
             self.move_timer.reset();
@@ -81,9 +81,7 @@ impl Monsters {
                     )))
                     .unwrap();
             }
-            return true;
         }
-        false
     }
 
     pub fn kill_monster_at(&mut self, x: usize, y: usize) -> Option<Monster> {
@@ -102,29 +100,18 @@ impl Monsters {
                 let enemy_killed = enemies[idx].clone();
                 enemies.remove(idx.clone());
                 self.game_log_tx
-                    .send(Cmds::Monster(MonsterCmds::Dead))
+                    .send(Cmds::Monster(MonsterCmds::Dead(enemy_killed.get_profile())))
                     .unwrap();
                 self.respawn(idx);
                 Some(enemy_killed)
             } else {
+                self.game_log_tx
+                    .send(Cmds::Monster(MonsterCmds::Updated(enemies[idx].clone())))
+                    .unwrap();
                 None
             }
         } else {
             None
-        }
-    }
-}
-
-impl SendCmds for Monsters {
-    fn send(&self) {
-        let enemies = Arc::clone(&self.enemies);
-        let data = enemies.lock().unwrap();
-        for monster in data.iter() {
-            // self.game_log_tx
-            //     .send(Cmds::Monster(MonsterCmds::Move(Position::new(
-            //         monster.x, monster.y, None,
-            //     ))))
-            //     .unwrap();
         }
     }
 }

@@ -25,11 +25,11 @@ impl Bound {
     }
 
     pub fn is_x_in_bound(&self, x: &usize) -> bool {
-        (*x > self.x_s) && (*x < self.x_e)
+        *x > 0 && (*x > self.x_s) && (*x < self.x_e)
     }
 
     pub fn is_y_in_bound(&self, y: &usize) -> bool {
-        (*y > self.y_s) && (*y < self.y_e)
+        *y > 0 && (*y > self.y_s) && (*y < self.y_e)
     }
 }
 

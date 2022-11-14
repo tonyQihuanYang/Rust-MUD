@@ -18,7 +18,7 @@ pub fn user_actions(game_tx: Sender<Cmds>) -> Result<(), Box<dyn Error>> {
                     KeyCode::Down => Cmds::Player(PlayerCmds::MoveDown),
                     KeyCode::Left => Cmds::Player(PlayerCmds::MoveLeft),
                     KeyCode::Right => Cmds::Player(PlayerCmds::MoveRight),
-                    KeyCode::Char(' ') | KeyCode::Enter => Cmds::Player(PlayerCmds::Attack),
+                    KeyCode::Char(' ') | KeyCode::Enter => Cmds::Player(PlayerCmds::InputAttack),
                     KeyCode::Esc | KeyCode::Char('q') => {
                         break 'userAction;
                     }

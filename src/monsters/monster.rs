@@ -1,4 +1,4 @@
-use crate::{Directions, NUM_COLS, NUM_ROWS};
+use crate::{position::Position, Directions, NUM_COLS, NUM_ROWS};
 use rand::seq::SliceRandom;
 use serde::Deserialize;
 
@@ -13,7 +13,27 @@ pub struct Monster {
     pub respawn_time: u64,
 }
 
+#[derive(Clone, Debug)]
+pub struct MonsterProfile {
+    pub id: u32,
+    pub name: String,
+    pub health: u64,
+    pub position: Position,
+}
+
 impl Monster {
+    pub fn get_profile(&self) -> MonsterProfile {
+        MonsterProfile {
+            id: self.id,
+            name: self.name.clone(),
+            health: self.health,
+            position: Position {
+                x: self.x,
+                y: self.y,
+                bound: None,
+            },
+        }
+    }
     pub fn is_dead(&self) -> bool {
         self.health == 0
     }

@@ -1,4 +1,5 @@
 use crate::commands::{format_cmd, Cmds, MonsterCmds, PlayerCmds, SystemCmds};
+use crate::position::{Bound, Position};
 use crate::ui::sections::{
     messages_box::MessagesBox,
     mini_map::{MiniMap, MiniMapItem},
@@ -8,8 +9,9 @@ use crate::ui::sections::{
 use super::{
     frame::{new_frame, Drawable, FrameMsg},
     render::{self},
-    LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START, MONSTERS_X_END, MONSTERS_X_START,
-    MONSTERS_Y_END, MONSTERS_Y_START,
+    skills::{skill::Skill, skills_control::SkillsControl},
+    LOG_X_END, LOG_X_START, LOG_Y_END, LOG_Y_START, MAP_X_END, MAP_X_START, MAP_Y_END, MAP_Y_START,
+    MONSTERS_X_END, MONSTERS_X_START, MONSTERS_Y_END, MONSTERS_Y_START,
 };
 use crossterm::{
     cursor::{Hide, Show},
@@ -21,7 +23,7 @@ use std::{
     io,
     sync::{
         mpsc::{self, Receiver, Sender},
-        Arc, Mutex, RwLock,
+        Arc, RwLock,
     },
     thread,
     time::Duration,
@@ -49,6 +51,8 @@ fn init_terminal() -> Sender<Cmds> {
     // Render loop
     thread::spawn(move || {
         let is_running = Arc::new(RwLock::new(true));
+        let skills_control: Arc<RwLock<SkillsControl>> =
+            Arc::new(RwLock::new(SkillsControl::new()));
         let map_section = Arc::new(RwLock::new(MiniMap::new()));
         let log_section = Arc::new(RwLock::new(MessagesBox::new(
             LOG_X_START,
@@ -63,6 +67,7 @@ fn init_terminal() -> Sender<Cmds> {
             MONSTERS_Y_END,
         );
 
+        let attacks_control_lock = Arc::clone(&skills_control);
         let running_lock = Arc::clone(&is_running);
         let log_lock = Arc::clone(&log_section);
         let map_lock = Arc::clone(&map_section);
@@ -74,13 +79,23 @@ fn init_terminal() -> Sender<Cmds> {
             render::render(&mut stdout, &new_frame(), &new_frame(), true);
             let mut last_frame = new_frame();
             let is_running = running_lock.read().unwrap();
+
             while *is_running {
                 let mut curr_frame = new_frame();
                 {
                     let log_section = log_lock.read().unwrap();
                     let map = map_lock.read().unwrap();
-                    let drawables: Vec<&dyn Drawable> =
-                        vec![&(*log_section), &monsters_section, &(*map)];
+                    {
+                        let mut skills_control = attacks_control_lock.write().unwrap();
+                        (*skills_control).refresh()
+                    }
+                    let skills_control = attacks_control_lock.read().unwrap();
+                    let drawables: Vec<&dyn Drawable> = vec![
+                        &(*log_section),
+                        &monsters_section,
+                        &(*map),
+                        &*skills_control,
+                    ];
 
                     for drawable in drawables {
                         drawable.draw(&mut curr_frame);
@@ -97,6 +112,8 @@ fn init_terminal() -> Sender<Cmds> {
         loop {
             let log_lock = Arc::clone(&log_section);
             let map_lock = Arc::clone(&map_section);
+            let attacks_control_lock = Arc::clone(&skills_control);
+
             match game_cmds_rx.recv() {
                 Ok(cmd) => {
                     {
@@ -124,6 +141,26 @@ fn init_terminal() -> Sender<Cmds> {
                                     position,
                                 });
                             }
+                            PlayerCmds::Attack(player) => {
+                                let attack = Skill::new(
+                                    Position::new(
+                                        player.position.x,
+                                        player.position.y,
+                                        Some(Bound::new(
+                                            MAP_X_START,
+                                            MAP_X_END,
+                                            MAP_Y_START,
+                                            MAP_Y_END,
+                                        )),
+                                    ),
+                                    3,
+                                    3,
+                                    None,
+                                );
+                                attack.render();
+                                let mut attacks_control = attacks_control_lock.write().unwrap();
+                                attacks_control.push(attack);
+                            }
                             _ => (),
                         },
                         Cmds::Monster(monster_cmd) => match monster_cmd {
@@ -134,6 +171,10 @@ fn init_terminal() -> Sender<Cmds> {
                                     icon: String::from("M"),
                                     position,
                                 });
+                            }
+                            MonsterCmds::Dead(monster) => {
+                                let map = map_lock.write().unwrap();
+                                (*map).remove(&monster.id);
                             }
                             _ => {}
                         },

@@ -54,7 +54,7 @@ impl Shot {
 
     pub fn explode(&mut self) {
         self.exploading = true;
-        self.timer = Timer::from_millis(250);
+        self.timer = Timer::from_millis(1000);
     }
 
     pub fn dead(&self) -> bool {

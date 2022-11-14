@@ -29,6 +29,7 @@ pub const LOG_X_END: usize = 40;
 pub const LOG_Y_START: usize = 21;
 pub const LOG_Y_END: usize = WINDOW_HEIGHT - 1;
 
+#[derive(Clone)]
 pub enum Directions {
     Up,
     Down,
