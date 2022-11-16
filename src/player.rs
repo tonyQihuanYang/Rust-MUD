@@ -1,6 +1,6 @@
 use crate::{
     commands::{Cmds, PlayerCmds},
-    monsters::monsters::Monsters,
+    game::controllers::monsters_controller::Monsters,
     position::{Bound, Position},
     profile::Profile,
     shot::Shot,

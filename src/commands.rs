@@ -1,5 +1,5 @@
 use crate::{
-    monsters::monster::{Monster, MonsterProfile},
+    game::models::monster::{Monster, MonsterProfile},
     position::Position,
     profile::Profile,
 };

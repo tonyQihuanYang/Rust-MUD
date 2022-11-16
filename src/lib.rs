@@ -1,5 +1,5 @@
 pub mod commands;
-pub mod monsters;
+pub mod game;
 pub mod player;
 pub mod position;
 pub mod profile;

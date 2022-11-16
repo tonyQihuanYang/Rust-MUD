@@ -1,0 +1,20 @@
+[
+  {
+    "id": 10000,
+    "name": "Spider",
+    "health": 40,
+    "x": 4,
+    "y": 6,
+    "exp": 100,
+    "respawn_time": 5000
+  },
+  {
+    "id": 10001,
+    "name": "Budge Dragon",
+    "health": 80,
+    "x": 8,
+    "y": 10,
+    "exp": 120,
+    "respawn_time": 5000
+  }
+]

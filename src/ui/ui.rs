@@ -29,9 +29,9 @@ use std::{
     time::Duration,
 };
 
-pub fn start() {
+pub fn start(ui_cmds_rx: Receiver<Cmds>) {
     // let audio = init_audio();
-    let game_cmds_tx = init_terminal();
+    init_terminal(ui_cmds_rx);
 }
 
 fn init_audio() -> Audio {
@@ -45,8 +45,7 @@ fn init_audio() -> Audio {
     audio
 }
 
-fn init_terminal(ui_cmds_rx) {
-    // let (game_cmds_tx, game_cmds_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
+fn init_terminal(ui_cmds_rx: Receiver<Cmds>) {
     // Render loop
     thread::spawn(move || {
         let is_running = Arc::new(RwLock::new(true));
@@ -113,7 +112,7 @@ fn init_terminal(ui_cmds_rx) {
             let map_lock = Arc::clone(&map_section);
             let attacks_control_lock = Arc::clone(&skills_control);
 
-            match game_cmds_rx.recv() {
+            match ui_cmds_rx.recv() {
                 Ok(cmd) => {
                     {
                         if let Some(formated_msg) = format_cmd(&cmd) {
@@ -189,5 +188,4 @@ fn init_terminal(ui_cmds_rx) {
         *is_running = false;
     });
     println!("Exit UI...");
-    game_cmds_tx
 }

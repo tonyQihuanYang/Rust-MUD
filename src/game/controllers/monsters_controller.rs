@@ -1,4 +1,4 @@
-use super::monster::Monster;
+use crate::game::models::monster::Monster;
 use crate::{
     commands::{Cmds, MonsterCmds},
     position::Position,

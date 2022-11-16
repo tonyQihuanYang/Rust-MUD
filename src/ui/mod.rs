@@ -1,8 +1,8 @@
 pub mod frame;
-pub mod main;
 pub mod render;
 pub mod sections;
 pub mod skills;
+pub mod ui;
 
 pub const WINDOW_HEIGHT: usize = 50; // Y
 pub const WINDOW_WIDTH: usize = 80; // X
