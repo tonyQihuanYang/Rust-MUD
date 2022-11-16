@@ -1,6 +1,5 @@
 pub mod commands;
 pub mod game;
-pub mod player;
 pub mod position;
 pub mod profile;
 pub mod server;

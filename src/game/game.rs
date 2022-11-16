@@ -1,10 +1,6 @@
-use super::controllers::monsters_controller::Monsters;
+use super::{controllers::monsters_controller::Monsters, models::player::Player};
 
-use crate::{
-    commands::{Cmds, PlayerCmds, SystemCmds},
-    player::Player,
-    server::fake_server,
-};
+use crate::commands::{Cmds, PlayerCmds, SystemCmds};
 use std::{sync::Arc, time::Duration};
 use std::{
     sync::{
@@ -20,13 +16,7 @@ pub fn start(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
     let (gears, monsters) = startup::load().unwrap();
     println!("{:?}", gears);
     println!("{:?}", monsters);
-    game_loop(render_tx, server_cmds_rx);
-}
 
-fn game_loop(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
-    // Render
-
-    // let (player_input_tx, player_input_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
     let (game_log_tx, game_log_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
     {
         thread::spawn(move || {
@@ -36,6 +26,10 @@ fn game_loop(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
         });
     }
 
+    game_loop(game_log_tx, server_cmds_rx);
+}
+
+fn game_loop(game_log_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
     // == Main Game Logic ==
     let running = Arc::new(Mutex::new(true));
     let player = Arc::new(Mutex::new(Player::new(game_log_tx.clone())));
