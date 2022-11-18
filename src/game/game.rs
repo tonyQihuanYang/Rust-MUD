@@ -1,6 +1,13 @@
-use super::{controllers::monsters_controller::Monsters, models::player::Player};
-
+use super::{
+    controllers::monsters_controller::MonstersControl,
+    models::{
+        monster_profile::{MonsterId, MonsterProfile},
+        monster_respawn_location::MonsterRespawnLocation,
+        player::Player,
+    },
+};
 use crate::commands::{Cmds, PlayerCmds, SystemCmds};
+use std::collections::HashMap;
 use std::{sync::Arc, time::Duration};
 use std::{
     sync::{
@@ -13,10 +20,7 @@ use std::{
 
 use crate::game::startup::startup;
 pub fn start(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
-    let (gears, monsters) = startup::load().unwrap();
-    println!("{:?}", gears);
-    println!("{:?}", monsters);
-
+    let (gears, monsters_dict, monster_respawn_location) = startup::load().unwrap();
     let (game_log_tx, game_log_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
     {
         thread::spawn(move || {
@@ -25,15 +29,28 @@ pub fn start(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
             }
         });
     }
-
-    game_loop(game_log_tx, server_cmds_rx);
+    game_loop(
+        game_log_tx,
+        server_cmds_rx,
+        monsters_dict,
+        monster_respawn_location,
+    );
 }
 
-fn game_loop(game_log_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
+fn game_loop(
+    game_log_tx: Sender<Cmds>,
+    server_cmds_rx: Receiver<Cmds>,
+    monsters_lookup: HashMap<MonsterId, MonsterProfile>,
+    monsters_respawn_location: Vec<MonsterRespawnLocation>,
+) {
     // == Main Game Logic ==
     let running = Arc::new(Mutex::new(true));
     let player = Arc::new(Mutex::new(Player::new(game_log_tx.clone())));
-    let mut monsters = Monsters::new(game_log_tx.clone());
+    let mut monsters_controller = MonstersControl::new(
+        game_log_tx.clone(),
+        monsters_lookup,
+        monsters_respawn_location,
+    );
     let mut instant = Instant::now();
 
     // Player Inputs
@@ -84,8 +101,8 @@ fn game_loop(game_log_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
         let player_lock = Arc::clone(&player);
         let mut player = player_lock.lock().unwrap();
         player.update(delta);
-        monsters.update(delta);
-        player.detect_hits(&mut monsters);
+        monsters_controller.update(delta);
+        player.detect_hits(&mut monsters_controller);
         // thread::sleep(Duration::from_millis(16));
     }
     println!("Exit...");

@@ -6,8 +6,8 @@
  *  |
  *  (0,10)
  */
-
-#[derive(Clone, Debug)]
+use serde::Deserialize;
+#[derive(Deserialize, Clone, Debug)]
 pub struct Bound {
     pub x_s: usize,
     pub x_e: usize,
@@ -33,7 +33,7 @@ impl Bound {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Position {
     pub x: usize,
     pub y: usize,

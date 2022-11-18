@@ -1,6 +1,6 @@
 use crate::{
     commands::{Cmds, PlayerCmds},
-    game::controllers::monsters_controller::Monsters,
+    game::controllers::monsters_controller::MonstersControl,
     position::{Bound, Position},
     profile::Profile,
     shot::Shot,
@@ -91,12 +91,12 @@ impl Player {
         self.shots.retain(|shot| !shot.dead());
     }
 
-    pub fn detect_hits(&mut self, monsters: &mut Monsters) {
+    pub fn detect_hits(&mut self, monsters_controller: &mut MonstersControl) {
         for shot in self.shots.iter_mut() {
             if !shot.exploading {
-                match monsters.kill_monster_at(shot.position.x, shot.position.y) {
+                match monsters_controller.kill_monster_at(shot.position.x, shot.position.y) {
                     Some(monster_killed) => {
-                        self.profile.gain_exp(monster_killed.exp);
+                        self.profile.gain_exp(monster_killed.profile.exp);
                         shot.explode();
                     }
                     None => {}

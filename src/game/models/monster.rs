@@ -1,37 +1,29 @@
+use std::sync::atomic::{AtomicU32, Ordering};
+static GLOBAL_MONSTERS_COUNT: AtomicU32 = AtomicU32::new(0);
+use super::monster_profile::MonsterProfile;
 use crate::{position::Position, Directions, NUM_COLS, NUM_ROWS};
 use rand::seq::SliceRandom;
 use serde::Deserialize;
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Monster {
+    pub profile: MonsterProfile,
     pub id: u32,
-    pub name: String,
     pub health: u64,
+    //Fixme: change it to Position
     pub x: usize,
     pub y: usize,
-    pub exp: u64,
-    pub respawn_time: u64,
-}
-
-#[derive(Clone, Debug)]
-pub struct MonsterProfile {
-    pub id: u32,
-    pub name: String,
-    pub health: u64,
-    pub position: Position,
 }
 
 impl Monster {
-    pub fn get_profile(&self) -> MonsterProfile {
-        MonsterProfile {
-            id: self.id,
-            name: self.name.clone(),
-            health: self.health,
-            position: Position {
-                x: self.x,
-                y: self.y,
-                bound: None,
-            },
+    pub fn new(profile: MonsterProfile, position: Position) -> Self {
+        let new_monster_id = GLOBAL_MONSTERS_COUNT.fetch_add(1, Ordering::SeqCst);
+        Self {
+            profile: profile.clone(),
+            id: new_monster_id,
+            health: profile.health,
+            x: position.x,
+            y: position.y,
         }
     }
     pub fn is_dead(&self) -> bool {

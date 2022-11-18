@@ -1,0 +1,34 @@
+[
+  {
+    "id": 10000,
+    "respawn_position": {
+      "x": 4,
+      "y": 6
+    },
+    "respawn_time": 5000
+  },
+  {
+    "id": 10001,
+    "respawn_position": {
+      "x": 4,
+      "y": 10
+    },
+    "respawn_time": 5000
+  },
+  {
+    "id": 10000,
+    "respawn_position": {
+      "x": 10,
+      "y": 6
+    },
+    "respawn_time": 5000
+  },
+  {
+    "id": 10001,
+    "respawn_position": {
+      "x": 14,
+      "y": 19
+    },
+    "respawn_time": 5000
+  }
+]
