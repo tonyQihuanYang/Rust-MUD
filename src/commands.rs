@@ -1,4 +1,8 @@
-use crate::{game::models::monster::Monster, position::Position, profile::Profile};
+use crate::{
+    game::models::{gear_profile::GearProfile, monster::Monster},
+    position::Position,
+    profile::Profile,
+};
 
 #[derive(Clone)]
 pub enum Cmds {
@@ -11,7 +15,7 @@ pub enum Cmds {
 pub enum MonsterCmds {
     Move(u32, Position),
     Updated(Monster),
-    Dead(Monster),
+    Dead(Monster, Vec<GearProfile>),
     Respwan,
     Damaged,
 }
@@ -54,7 +58,9 @@ pub fn format_cmd(cmd: &Cmds) -> Option<String> {
             //     id, position.x, position.y
             // )),
             MonsterCmds::Updated(m) => Some(format!("{} {}", m.profile.name, m.health)),
-            MonsterCmds::Dead(m) => Some(format!("{} is Dead", m.profile.name)),
+            MonsterCmds::Dead(m, fall_offs) => {
+                Some(format!("{} is Dead, {:?}", m.profile.name, fall_offs))
+            }
             MonsterCmds::Damaged => Some(String::from("Monster Damaged")),
             MonsterCmds::Respwan => Some(String::from("Monster Respwan")),
             _ => None,

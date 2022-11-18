@@ -1,6 +1,7 @@
 use super::{
     controllers::monsters_controller::MonstersControl,
     models::{
+        gear_profile::{GearId, GearProfile},
         monster_profile::{MonsterId, MonsterProfile},
         monster_respawn_location::MonsterRespawnLocation,
         player::Player,
@@ -20,7 +21,7 @@ use std::{
 
 use crate::game::startup::startup;
 pub fn start(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
-    let (gears, monsters_dict, monster_respawn_location) = startup::load().unwrap();
+    let (gears_dict, monsters_dict, monster_respawn_location) = startup::load().unwrap();
     let (game_log_tx, game_log_rx): (Sender<Cmds>, Receiver<Cmds>) = mpsc::channel();
     {
         thread::spawn(move || {
@@ -34,6 +35,7 @@ pub fn start(render_tx: Sender<Cmds>, server_cmds_rx: Receiver<Cmds>) {
         server_cmds_rx,
         monsters_dict,
         monster_respawn_location,
+        gears_dict,
     );
 }
 
@@ -42,6 +44,7 @@ fn game_loop(
     server_cmds_rx: Receiver<Cmds>,
     monsters_lookup: HashMap<MonsterId, MonsterProfile>,
     monsters_respawn_location: Vec<MonsterRespawnLocation>,
+    gears_dict: HashMap<GearId, GearProfile>,
 ) {
     // == Main Game Logic ==
     let running = Arc::new(Mutex::new(true));
@@ -50,6 +53,7 @@ fn game_loop(
         game_log_tx.clone(),
         monsters_lookup,
         monsters_respawn_location,
+        gears_dict,
     );
     let mut instant = Instant::now();
 

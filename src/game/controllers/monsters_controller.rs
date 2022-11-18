@@ -1,4 +1,6 @@
+use super::fall_off_controller::FallOffControl;
 use crate::game::models::{
+    gear_profile::{GearId, GearProfile},
     monster::Monster,
     monster_profile::{MonsterId, MonsterProfile},
     monster_respawn_location::MonsterRespawnLocation,
@@ -21,6 +23,7 @@ pub struct MonstersControl {
     pub enemies: Arc<Mutex<Vec<Monster>>>,
     monsters_lookup: HashMap<MonsterId, MonsterProfile>,
     monsters_respawn_location: Vec<MonsterRespawnLocation>,
+    fall_off_controller: FallOffControl,
     game_log_tx: Sender<Cmds>,
     move_timer: Timer,
 }
@@ -30,6 +33,7 @@ impl MonstersControl {
         game_log_tx: Sender<Cmds>,
         monsters_lookup: HashMap<MonsterId, MonsterProfile>,
         monsters_respawn_location: Vec<MonsterRespawnLocation>,
+        gears_dict: HashMap<GearId, GearProfile>,
     ) -> Self {
         let monsters = monsters_respawn_location
             .clone()
@@ -45,6 +49,7 @@ impl MonstersControl {
         Self {
             game_log_tx,
             monsters_lookup,
+            fall_off_controller: FallOffControl::new(gears_dict),
             monsters_respawn_location,
             enemies: Arc::new(Mutex::new(monsters)),
             move_timer: Timer::from_millis(500),
@@ -106,8 +111,12 @@ impl MonstersControl {
             if enemies[idx].is_dead() {
                 let enemy_killed = enemies[idx].clone();
                 enemies.remove(idx.clone());
+                let fall_off = self.fall_off_controller.get_fall_off(&enemy_killed.profile);
                 self.game_log_tx
-                    .send(Cmds::Monster(MonsterCmds::Dead(enemy_killed.clone())))
+                    .send(Cmds::Monster(MonsterCmds::Dead(
+                        enemy_killed.clone(),
+                        fall_off,
+                    )))
                     .unwrap();
                 self.respawn(idx);
                 Some(enemy_killed)

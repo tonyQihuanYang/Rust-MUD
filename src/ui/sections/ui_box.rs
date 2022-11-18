@@ -51,11 +51,19 @@ impl UiBox {
                 frame[position.x][position.y] = msg.value.clone();
             } else {
                 let char_vec: Vec<char> = to_string(&msg.value).chars().collect();
-                for (char_i, c) in char_vec.iter().enumerate() {
+                let mut line = 0;
+                let mut count = 0;
+                for (_, c) in char_vec.iter().enumerate() {
                     // TODO ADD logic to swap line if too long
                     // TODO, FIX COLOR
-                    frame[self.x_start + 1 + char_i][self.y_start + 1 + index] =
+                    if count >= self.x_end - self.x_start - 3 {
+                        line += 1;
+                        count = 0;
+                    }
+
+                    frame[self.x_start + 1 + count][self.y_start + 1 + index + line] =
                         FrameMsg::StyledString(c.to_string().red());
+                    count += 1;
                 }
             }
         }

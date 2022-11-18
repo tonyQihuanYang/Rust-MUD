@@ -170,7 +170,7 @@ fn init_terminal(ui_cmds_rx: Receiver<Cmds>) {
                                     position,
                                 });
                             }
-                            MonsterCmds::Dead(monster) => {
+                            MonsterCmds::Dead(monster, _) => {
                                 let map = map_lock.write().unwrap();
                                 (*map).remove(&monster.id);
                             }

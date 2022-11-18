@@ -3,12 +3,16 @@
     "id": 10000,
     "name": "Spider",
     "health": 40,
-    "exp": 100
+    "exp": 100,
+    "max_fall_off": 3,
+    "fall_off": { "0": 0.5, "1": 0.5 }
   },
   {
     "id": 10001,
     "name": "Budge Dragon",
     "health": 80,
-    "exp": 120
+    "exp": 120,
+    "max_fall_off": 3,
+    "fall_off": { "0": 0.7, "1": 0.5 }
   }
 ]

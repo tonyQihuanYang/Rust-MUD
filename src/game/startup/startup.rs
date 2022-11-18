@@ -1,13 +1,13 @@
+use super::load_json;
 use crate::game::models::{
+    gear_profile::{GearId, GearProfile},
     monster_profile::{MonsterId, MonsterProfile},
     monster_respawn_location::MonsterRespawnLocation,
 };
 use std::collections::HashMap;
-
-use super::{json_models::gear_json::GearJson, load_json};
 pub fn load() -> Result<
     (
-        Vec<GearJson>,
+        HashMap<GearId, GearProfile>,
         HashMap<MonsterId, MonsterProfile>,
         Vec<MonsterRespawnLocation>,
     ),
