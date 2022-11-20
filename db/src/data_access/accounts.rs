@@ -1,9 +1,8 @@
-use self::models::*;
-use db::*;
+use crate::{establish_connection, models::Account};
 use diesel::prelude::*;
 
-pub fn main() {
-    use self::schema::accounts::dsl::*;
+pub fn show_accounts() {
+    use crate::schema::accounts::dsl::*;
 
     let connection = &mut establish_connection();
     let results = accounts

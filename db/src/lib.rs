@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
 
-pub mod bin;
+pub mod data_access;
 pub mod models;
 pub mod schema;
 

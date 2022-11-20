@@ -22,7 +22,7 @@ pub fn load() -> Result<
 }
 
 pub fn load_gears() -> Result<HashMap<GearId, GearProfile>, String> {
-    let data = fs::read_to_string("./resource/json/gears.json").expect("Unable to read file");
+    let data = fs::read_to_string("./game_server/resource/json/gears.json").expect("Unable to read file");
     let gears: Vec<GearProfile> = serde_json::from_str(&data).expect("Could not serde_json");
     let gears_dict = gears
         .into_iter()
@@ -32,7 +32,7 @@ pub fn load_gears() -> Result<HashMap<GearId, GearProfile>, String> {
 }
 
 pub fn load_monsters() -> Result<HashMap<MonsterId, MonsterProfile>, String> {
-    let data = fs::read_to_string("./resource/json/monsters.json").expect("Unable to read file");
+    let data = fs::read_to_string("./game_server/resource/json/monsters.json").expect("Unable to read file");
     let monsters: Vec<MonsterProfile> = serde_json::from_str(&data).expect("Unable to serde_json");
     let monsters_dict = monsters
         .into_iter()
@@ -43,7 +43,7 @@ pub fn load_monsters() -> Result<HashMap<MonsterId, MonsterProfile>, String> {
 
 pub fn load_monsters_respawn_location() -> Result<Vec<MonsterRespawnLocation>, String> {
     let data =
-        fs::read_to_string("./resource/json/monsters_location.json").expect("Unable to read file");
+        fs::read_to_string("./game_server/resource/json/monsters_location.json").expect("Unable to read file");
     let monsters_location: Vec<MonsterRespawnLocation> =
         serde_json::from_str(&data).expect("Unable to serde_json");
     Ok(monsters_location)
