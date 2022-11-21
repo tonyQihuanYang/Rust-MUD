@@ -1,5 +1,8 @@
 use crate::{
-    game::models::{gear_profile::GearProfile, monster::Monster},
+    game::{
+        controllers::players_controller::UserId,
+        models::{gear_profile::GearProfile, monster::Monster},
+    },
     position::Position,
     profile::Profile,
 };
@@ -22,13 +25,14 @@ pub enum MonsterCmds {
 
 #[derive(Clone)]
 pub enum PlayerCmds {
-    InputAttack, // TODO: Create INPUT_PLAYERS_CMD
-    MoveLeft,
-    MoveRight,
-    MoveUp,
-    MoveDown,
+    InputAttack(UserId), // TODO: Create INPUT_PLAYERS_CMD
+    MoveLeft(UserId),
+    MoveRight(UserId),
+    MoveUp(UserId),
+    MoveDown(UserId),
     Attack(Profile),
     Move(u32, Position),
+    Join(UserId),
 }
 
 #[derive(Clone)]

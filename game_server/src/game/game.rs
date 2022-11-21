@@ -7,13 +7,15 @@ use super::{
         player::Player,
     },
 };
-use crate::commands::{Cmds, PlayerCmds, SystemCmds};
-use std::collections::HashMap;
-use std::{sync::Arc, time::Duration};
+use crate::{
+    commands::{Cmds, PlayerCmds, SystemCmds},
+    game::controllers::players_controller::PlayersControl,
+};
 use std::{
+    collections::HashMap,
     sync::{
         mpsc::{self, Receiver, Sender},
-        Mutex,
+        Arc, Mutex, RwLock,
     },
     thread,
     time::Instant,
@@ -48,7 +50,9 @@ fn game_loop(
 ) {
     // == Main Game Logic ==
     let running = Arc::new(Mutex::new(true));
-    let player = Arc::new(Mutex::new(Player::new(game_log_tx.clone())));
+    // let player = Arc::new(Mutex::new(Player::new(game_log_tx.clone())));
+    let players_controller = Arc::new(PlayersControl::new(game_log_tx.clone()));
+
     let mut monsters_controller = MonstersControl::new(
         game_log_tx.clone(),
         monsters_lookup,
@@ -58,55 +62,63 @@ fn game_loop(
     let mut instant = Instant::now();
 
     // Player Inputs
-    {
-        // fake_server::listen(player_input_tx.clone());
-        let player_lock = Arc::clone(&player);
-        let running = Arc::clone(&running);
-        thread::spawn(move || {
-            for msg in server_cmds_rx {
-                let mut player = player_lock.lock().unwrap();
+    // {
+    //     // fake_server::listen(player_input_tx.clone());
+    //     // let player_lock = Arc::clone(&player);
+    //     let running = Arc::clone(&running);
+    //     let players_controller = Arc::clone(&players_controller);
+    //     // thread::spawn(move || {
+    //     for msg in server_cmds_rx {
+    //         match msg.clone() {
+    //             Cmds::System(SystemCmds::Quit) => {
+    //                 let mut game_running = running.lock().unwrap();
+    //                 *game_running = false;
+    //             }
+    //             Cmds::Player(player_cmd) => {
+    //                 (*players_controller).execute_cmds(player_cmd);
+    //             }
+    //             _ => (),
+    //         }
+    //     }
+    //     // });
+    // }
+
+    let running = Arc::clone(&running);
+    // game logic
+    while *running.lock().unwrap() {
+        {
+            // fake_server::listen(player_input_tx.clone());
+            // let player_lock = Arc::clone(&player);
+            let running = Arc::clone(&running);
+            let players_controller = Arc::clone(&players_controller);
+            // thread::spawn(move || {
+            if let Ok(msg) = server_cmds_rx.recv() {
                 match msg.clone() {
                     Cmds::System(SystemCmds::Quit) => {
                         let mut game_running = running.lock().unwrap();
                         *game_running = false;
                     }
-                    Cmds::Player(player_cmd) => match player_cmd {
-                        PlayerCmds::MoveUp => {
-                            (*player).move_up();
-                        }
-                        PlayerCmds::MoveDown => {
-                            (*player).move_down();
-                        }
-                        PlayerCmds::MoveLeft => {
-                            (*player).move_left();
-                        }
-                        PlayerCmds::MoveRight => {
-                            (*player).move_right();
-                        }
-                        PlayerCmds::InputAttack => {
-                            (*player).shoot();
-                        }
-                        _ => (),
-                    },
+                    Cmds::Player(player_cmd) => {
+                        (*players_controller).execute_cmds(player_cmd);
+                    }
                     _ => (),
                 }
             }
-        });
-    }
-
-    let running = Arc::clone(&running);
-    // game logic
-    while *running.lock().unwrap() {
+            // });
+        }
+        //
+        //
+        //
         // per-frame init
         let delta = instant.elapsed();
         instant = Instant::now();
 
         // Updates
-        let player_lock = Arc::clone(&player);
-        let mut player = player_lock.lock().unwrap();
-        player.update(delta);
+        // let player_lock = Arc::clone(&player);
+        // let mut player = player_lock.lock().unwrap();
+        // player.update(delta);
         monsters_controller.update(delta);
-        player.detect_hits(&mut monsters_controller);
+        // player.detect_hits(&mut monsters_controller);
         // thread::sleep(Duration::from_millis(16));
     }
     println!("Exit...");
