@@ -1,7 +1,8 @@
 use crate::commands::{Cmds, PlayerCmds, SystemCmds};
-use crate::game::models::player::Player;
+use crate::game::models::player::{self, Player};
+use super::monsters_controller::{MonstersControl};
 use std::sync::{Arc, RwLock};
-use std::{collections::HashMap, sync::mpsc::Sender};
+use std::{collections::HashMap, sync::mpsc::Sender, time::Duration};
 pub type UserId = i32;
 
 pub struct PlayersControl {
@@ -17,9 +18,28 @@ impl PlayersControl {
         }
     }
 
-    pub fn execute_cmds(&self, cmd: PlayerCmds) {
+    pub fn update(&self, delta: Duration) {
+        for (_, player_lock) in &self.players {
+            let mut player = player_lock.write().unwrap();
+            (*player).update(delta);
+        }
+    }
+
+    pub fn detect_hits(&self, monsters_controller: &mut MonstersControl) {
+        for (_, player_lock) in &self.players {
+            let mut player = player_lock.write().unwrap();
+            (*player).detect_hits(monsters_controller);
+        }
+    }
+
+    pub fn execute_cmds(&mut self, cmd: PlayerCmds) {
         match cmd.clone() {
-            PlayerCmds::Join(user_id) => if let Some(player) = self.get_player(&user_id) {},
+            PlayerCmds::Join(user_id) => {
+                self.players.insert(
+                    user_id,
+                    Arc::new(RwLock::new(Player::new(self.game_log_tx.clone()))),
+                );
+            }
             PlayerCmds::MoveUp(user_id) => {
                 if let Some(player_lock) = self.get_player(&user_id) {
                     let mut player = player_lock.write().unwrap();
@@ -52,13 +72,6 @@ impl PlayersControl {
             }
             _ => (),
         }
-    }
-
-    fn join_player(&mut self, user_id: UserId) {
-        self.players.insert(
-            user_id,
-            Arc::new(RwLock::new(Player::new(self.game_log_tx.clone()))),
-        );
     }
 
     fn get_player(&self, user_id: &UserId) -> Option<&Arc<RwLock<Player>>> {
