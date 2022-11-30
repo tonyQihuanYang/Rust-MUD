@@ -2,16 +2,16 @@ use crate::position::Position;
 
 #[derive(Clone, Debug)]
 pub struct Profile {
-    pub id: u32,
+    pub id: i32,
     pub position: Position,
     pub exp: u64,
     pub name: String,
 }
 
 impl Profile {
-    pub fn new(pos: Position) -> Self {
+    pub fn new(id: i32, pos: Position) -> Self {
         Self {
-            id: 0,
+            id,
             exp: 0,
             name: "UserName".to_string(),
             position: pos,

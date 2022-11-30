@@ -34,10 +34,10 @@ impl PlayersControl {
 
     pub fn execute_cmds(&mut self, cmd: PlayerCmds) {
         match cmd.clone() {
-            PlayerCmds::Join(user_id) => {
+            PlayerCmds::Join(player) => {
                 self.players.insert(
-                    user_id,
-                    Arc::new(Mutex::new(Player::new(self.game_log_tx.clone()))),
+                    player.id,
+                    Arc::new(Mutex::new(Player::new(player.id, self.game_log_tx.clone()))),
                 );
             }
             PlayerCmds::MoveUp(user_id) => {

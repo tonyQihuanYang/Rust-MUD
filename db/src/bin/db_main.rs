@@ -19,6 +19,6 @@ fn players(user_id: i32) {
     // let new_player = data_access::players::create_player(user_id, "TOny");
 
     if let Some(player) = data_access::players::get_player(user_id) {
-        data_access::players::update_player_exp(player.id, 100).expect("Not able to update exp");
+        data_access::players::incr_exp(player.id, 100).expect("Not able to update exp");
     }
 }

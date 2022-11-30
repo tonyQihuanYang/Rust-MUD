@@ -41,7 +41,6 @@ impl MonstersControl {
             .filter(|respawn_info| monsters_lookup.contains_key(&respawn_info.id))
             .map(|respawn_info| {
                 let monster_profile = monsters_lookup.get(&respawn_info.id).unwrap();
-                println!("1");
                 Monster::new(monster_profile.clone(), respawn_info.respawn_position)
             })
             .collect();

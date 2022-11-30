@@ -1,7 +1,7 @@
 use crate::schema::players;
 use diesel::prelude::*;
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Player {
     pub user_id: i32,
     pub id: i32,

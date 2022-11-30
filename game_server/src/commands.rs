@@ -1,3 +1,5 @@
+use db::models::player::Player;
+
 use crate::{
     game::{
         controllers::players_controller::UserId,
@@ -31,8 +33,9 @@ pub enum PlayerCmds {
     MoveUp(UserId),
     MoveDown(UserId),
     Attack(Profile),
-    Move(u32, Position),
-    Join(UserId),
+    IncrExp(UserId, i32),
+    Move(UserId, Position),
+    Join(Player),
 }
 
 #[derive(Clone)]
@@ -50,6 +53,7 @@ pub fn format_cmd(cmd: &Cmds) -> Option<String> {
             // PlayerCmds::MoveDown => "Player Moved Down",
             // PlayerCmds::MoveRight => "Player Moved Right",
             PlayerCmds::Attack(_) => Some(String::from("Player Attack")),
+            PlayerCmds::IncrExp(id, exp) => Some(format!("Player {} incr exp {}", id, exp)),
             // PlayerCmds::Move(id, position) => Some(format!(
             //     "Player {} Moved x:{} y:{}",
             //     id, position.x, position.y

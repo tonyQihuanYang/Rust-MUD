@@ -1,6 +1,6 @@
 use crate::{
     commands::{Cmds, PlayerCmds},
-    game::controllers::monsters_controller::MonstersControl,
+    game::{controllers::monsters_controller::MonstersControl, data_access::player::incr_exp},
     position::{Bound, Position},
     profile::Profile,
     shot::Shot,
@@ -16,14 +16,17 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(game_log_tx: Sender<Cmds>) -> Self {
+    pub fn new(id: i32, game_log_tx: Sender<Cmds>) -> Self {
         Self {
             game_log_tx,
-            profile: Profile::new(Position::new(
-                NUM_COLS / 2,
-                NUM_ROWS - 1,
-                Some(Bound::new(0, NUM_COLS, 0, NUM_ROWS)),
-            )),
+            profile: Profile::new(
+                id,
+                Position::new(
+                    NUM_COLS / 2,
+                    NUM_ROWS - 1,
+                    Some(Bound::new(0, NUM_COLS, 0, NUM_ROWS)),
+                ),
+            ),
             shots: Vec::new(),
         }
     }
@@ -97,7 +100,15 @@ impl Player {
                 match monsters_controller.kill_monster_at(shot.position.x, shot.position.y) {
                     Some(monster_killed) => {
                         self.profile.gain_exp(monster_killed.profile.exp);
+                        incr_exp(self.profile.id, monster_killed.profile.exp as i32);
                         shot.explode();
+
+                        self.game_log_tx
+                            .send(Cmds::Player(PlayerCmds::IncrExp(
+                                self.profile.id,
+                                monster_killed.profile.exp as i32,
+                            )))
+                            .unwrap();
                     }
                     None => {}
                 }

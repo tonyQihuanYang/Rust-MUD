@@ -32,7 +32,7 @@ pub fn get_player(_user_id: i32) -> Option<Player> {
     result
 }
 
-pub fn update_player_exp(_id: i32, _exp: i32) -> QueryResult<usize> {
+pub fn incr_exp(_id: i32, _exp: i32) -> QueryResult<usize> {
     let connection = &mut establish_connection();
     use crate::schema::players::dsl::*;
     diesel::update(players)

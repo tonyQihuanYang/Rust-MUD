@@ -134,7 +134,7 @@ fn init_terminal(ui_cmds_rx: Receiver<Cmds>) {
                             PlayerCmds::Move(id, position) => {
                                 let map = map_lock.write().unwrap();
                                 (*map).show(&MiniMapItem {
-                                    id,
+                                    id: id as u32,
                                     icon: String::from("A"),
                                     position,
                                 });
