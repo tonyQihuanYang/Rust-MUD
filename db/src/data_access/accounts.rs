@@ -1,6 +1,6 @@
 use crate::{
     establish_connection,
-    models::{Account, NewAccount},
+    models::account::{Account, NewAccount},
 };
 use diesel::prelude::*;
 

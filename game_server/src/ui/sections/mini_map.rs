@@ -49,7 +49,7 @@ impl MiniMap {
 
 impl Drawable for MiniMap {
     fn draw(&self, frame: &mut Frame) {
-        self.ui.clear_frame(frame);
+        // self.ui.clear_frame(frame);
         self.ui.draw_outline(frame);
 
         let items = self.items.read().unwrap();
