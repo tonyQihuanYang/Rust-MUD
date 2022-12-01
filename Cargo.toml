@@ -1,6 +1,12 @@
 [workspace]
 
+resolver = "2" # Important! wgpu/Bevy needs this!
 members = [
     "db",
     "game_server",
+    "bevy"
 ]
+
+
+
+
