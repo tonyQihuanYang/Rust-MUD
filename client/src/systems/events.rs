@@ -95,11 +95,22 @@ pub fn insert_component_event(
     mut local: Commands,
     player_textures: Res<PlayerTextures>,
     query: Query<&Player>,
+    global: ResMut<Global>,
 ) {
     for event in event_reader.iter() {
         if let InsertComponentEvent(entity, ProtocolKind::Color) = event {
             if let Ok(_) = query.get(*entity) {
-                info!("add player to entity");
+                info!("add player to entity!!!!!!!>>>>>>>>>>>");
+
+                // FIXME, add the game stage to prevent this happen
+                // Check if the enity owned, if yes, break
+                if let Some(owned_entity) = &global.owned_entity {
+                    let server_entity = owned_entity.confirmed;
+                    if server_entity == *entity {
+                        info!("breaking create player, because it is yourself");
+                        break;
+                    }
+                }
 
                 local
                     .entity(*entity)
@@ -180,6 +191,8 @@ pub fn receive_message_event(
     mut event_reader: EventReader<MessageEvent<Protocol, Channels>>,
     mut local: Commands,
     mut global: ResMut<Global>,
+
+    player_textures: Res<PlayerTextures>,
     client: Client<Protocol, Channels>,
 ) {
     for event in event_reader.iter() {
@@ -190,18 +203,19 @@ pub fn receive_message_event(
             let entity = message.entity.get(&client).unwrap();
             if assign {
                 info!("gave ownership of entity");
-
+                // Create YOU AS YOU!
                 let prediction_entity =
                     CommandsExt::<Protocol>::duplicate_entity(&mut local, entity)
-                        .insert(SpriteBundle {
-                            sprite: Sprite {
-                                custom_size: Some(Vec2::new(SQUARE_SIZE, SQUARE_SIZE)),
-                                color: BevyColor::WHITE,
+                        .insert(SpriteSheetBundle {
+                            texture_atlas: player_textures.body.clone(),
+                            transform: Transform {
+                                translation: Vec3::new(10.0, 10.0, 15.0),
+                                scale: Vec3::new(0.03125, 0.03125, 1.),
                                 ..Default::default()
                             },
-                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
                             ..Default::default()
                         })
+                        .insert(PlayerTimer::default())
                         .insert(MySelf)
                         .id();
 
