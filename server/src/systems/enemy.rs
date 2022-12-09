@@ -42,10 +42,10 @@ pub fn spawn_enemys(global: &ResMut<Global>, server: &mut Server<Protocol, Chann
 pub fn enermy_movement(mut query: Query<&mut Position, With<Enemy>>) {
     for mut position in query.iter_mut() {
         match Random::gen_range_u32(1, 5) {
-            1 => *position.x = position.x.wrapping_sub(1 as i16),
-            2 => *position.x = position.x.wrapping_add(1 as i16),
-            3 => *position.y = position.y.wrapping_sub(1 as i16),
-            4 => *position.y = position.y.wrapping_add(1 as i16),
+            1 => *position.x = position.x.wrapping_sub(3 as i16),
+            2 => *position.x = position.x.wrapping_add(3 as i16),
+            3 => *position.y = position.y.wrapping_sub(3 as i16),
+            4 => *position.y = position.y.wrapping_add(3 as i16),
             _ => (),
         };
     }

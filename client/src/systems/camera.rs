@@ -1,12 +1,5 @@
-use bevy::{
-    prelude::*,
-    render::camera::{RenderTarget, ScalingMode},
-};
-use naia_bevy_demo_shared::protocol::Player;
-
-use crate::{app::RESOLUTION, resources::PlayerTextures};
-
-use super::{events::MySelf, player::PlayerTimer};
+use bevy::prelude::*;
+use naia_bevy_demo_shared::protocol::CurrentUser;
 
 const SQUARE_SIZE: f32 = 32.0;
 pub fn setup_camera(mut commands: Commands) {
@@ -27,8 +20,8 @@ pub fn setup_camera(mut commands: Commands) {
 }
 
 pub fn camera_follow(
-    mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<MySelf>)>,
-    player_query: Query<&Transform, With<MySelf>>,
+    mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<CurrentUser>)>,
+    player_query: Query<&Transform, With<CurrentUser>>,
 ) {
     let mut cam_transform = camera_query.single_mut();
     if let Ok(player_transform) = player_query.get_single() {

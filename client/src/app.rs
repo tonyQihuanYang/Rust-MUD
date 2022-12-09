@@ -8,7 +8,11 @@ use crate::systems::{camera, events, init, input, player, spell, sync, tick};
 
 pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 600.0;
-
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+enum AppState {
+    Startup,
+    InGame,
+}
 pub fn run() {
     App::default()
         .insert_resource(Msaa { samples: 4 })

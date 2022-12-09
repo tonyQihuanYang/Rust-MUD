@@ -19,7 +19,7 @@ use naia_bevy_client::{
 
 use naia_bevy_demo_shared::{
     behavior as shared_behavior,
-    protocol::{Color, ColorValue, Enemy, Player, Position, Protocol, ProtocolKind},
+    protocol::{Color, ColorValue, CurrentUser, Enemy, Player, Position, Protocol, ProtocolKind},
     Channels,
 };
 
@@ -94,7 +94,7 @@ pub fn insert_component_event(
     mut event_reader: EventReader<InsertComponentEvent<ProtocolKind>>,
     mut local: Commands,
     player_textures: Res<PlayerTextures>,
-    query: Query<&Player>,
+    query: Query<&Player, Without<CurrentUser>>,
     global: ResMut<Global>,
 ) {
     for event in event_reader.iter() {
@@ -184,9 +184,6 @@ pub fn update_component_event(
     }
 }
 
-#[derive(Component)]
-pub struct MySelf;
-
 pub fn receive_message_event(
     mut event_reader: EventReader<MessageEvent<Protocol, Channels>>,
     mut local: Commands,
@@ -216,7 +213,6 @@ pub fn receive_message_event(
                             ..Default::default()
                         })
                         .insert(PlayerTimer::default())
-                        .insert(MySelf)
                         .id();
 
                 global.owned_entity = Some(OwnedEntity::new(entity, prediction_entity));
