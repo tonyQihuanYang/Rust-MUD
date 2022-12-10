@@ -1,4 +1,5 @@
 use bevy::sprite::collide_aabb::collide;
+use bevy_app::{App, Plugin};
 use bevy_ecs::{
     prelude::Entity,
     query::With,
@@ -7,7 +8,7 @@ use bevy_ecs::{
 use bevy_log::info;
 use bevy_math::{Vec2, Vec3};
 // use bevy_sprite::collide_aabb::collide;
-use naia_bevy_server::Server;
+use naia_bevy_server::{Server, Stage};
 
 use naia_bevy_demo_shared::{
     protocol::{Enemy, Position, Protocol, Spell},
@@ -15,6 +16,16 @@ use naia_bevy_demo_shared::{
 };
 
 use crate::resources::Global;
+
+pub struct SpellPlugin;
+impl Plugin for SpellPlugin {
+    fn build(&self, app: &mut App) {
+        // .add_system_to_stage(Stage::Tick, spell::spwan_spell_system)
+        // .add_system_to_stage(Stage::Tick, spell::update_spell_system)
+        app.add_system_to_stage(Stage::Tick, spwan_spell_system);
+        app.add_system_to_stage(Stage::Tick, detect_spell_collision);
+    }
+}
 
 pub fn spwan_spell_system(mut global: ResMut<Global>, mut server: Server<Protocol, Channels>) {
     // if global.spell_tick == 0 {
