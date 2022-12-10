@@ -188,7 +188,6 @@ pub fn receive_message_event(
     mut event_reader: EventReader<MessageEvent<Protocol, Channels>>,
     mut local: Commands,
     mut global: ResMut<Global>,
-
     player_textures: Res<PlayerTextures>,
     client: Client<Protocol, Channels>,
 ) {

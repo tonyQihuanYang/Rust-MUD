@@ -34,8 +34,9 @@ fn main() {
         .add_system_to_stage(Stage::ReceiveEvents, events::disconnection_event)
         .add_system_to_stage(Stage::ReceiveEvents, events::receive_message_event)
         .add_system(enemy)
-        .add_system_to_stage(Stage::Tick, spell::spwan_spell_system)
-        .add_system_to_stage(Stage::Tick, spell::update_spell_system)
+        // .add_system_to_stage(Stage::Tick, spell::spwan_spell_system)
+        // .add_system_to_stage(Stage::Tick, spell::update_spell_system)
+        .add_system_to_stage(Stage::Tick, spell::detect_spell_collision)
         .add_system_to_stage(Stage::Tick, enermy_movement)
         // Gameplay Loop on Tick
         .add_system_to_stage(Stage::Tick, tick)

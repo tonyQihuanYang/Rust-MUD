@@ -1,13 +1,16 @@
+use bevy::sprite::collide_aabb::collide;
 use bevy_ecs::{
     prelude::Entity,
     query::With,
     system::{Query, ResMut},
 };
 use bevy_log::info;
-use naia_bevy_server::{shared::Random, Server};
+use bevy_math::{Vec2, Vec3};
+// use bevy_sprite::collide_aabb::collide;
+use naia_bevy_server::Server;
 
 use naia_bevy_demo_shared::{
-    protocol::{Color, ColorValue, Enemy, Position, Protocol, Spell},
+    protocol::{Enemy, Position, Protocol, Spell},
     Channels,
 };
 
@@ -34,6 +37,31 @@ pub fn spwan_spell_system(mut global: ResMut<Global>, mut server: Server<Protoco
     //         .insert(Spell::new(1, 60, 60, 0, 0));
     //     global.spell_tick += 1;
     // }
+}
+
+pub fn detect_spell_collision(
+    mut server: Server<Protocol, Channels>,
+    mut spell_query: Query<(&Position, Entity), With<Spell>>,
+    mut enemy_query: Query<(&Position, Entity), With<Enemy>>,
+) {
+    let size = 32.0;
+
+    for (spell_pos, spell_entity) in spell_query.iter_mut() {
+        for (enemy_pos, enemy_entity) in enemy_query.iter_mut() {
+            if collide(
+                Vec3::new(*spell_pos.x as f32, *spell_pos.y as f32, 0.0),
+                Vec2::splat(size),
+                Vec3::new(*enemy_pos.x as f32, *enemy_pos.y as f32, 0.0),
+                Vec2::splat(size),
+            )
+            .is_some()
+            {
+                info!("Hitted");
+                server.entity_mut(&enemy_entity).despawn();
+                server.entity_mut(&spell_entity).despawn();
+            }
+        }
+    }
 }
 
 pub fn update_spell_system(

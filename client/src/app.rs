@@ -13,6 +13,7 @@ enum AppState {
     Startup,
     InGame,
 }
+
 pub fn run() {
     App::default()
         .insert_resource(Msaa { samples: 4 })

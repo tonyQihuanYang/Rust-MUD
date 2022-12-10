@@ -2957,10 +2957,12 @@ dependencies = [
 name = "naia-bevy-server-demo"
 version = "0.1.0"
 dependencies = [
+ "bevy 0.9.1",
  "bevy_app",
  "bevy_core",
  "bevy_ecs",
  "bevy_log",
+ "bevy_math",
  "naia-bevy-demo-shared",
  "naia-bevy-server",
 ]
