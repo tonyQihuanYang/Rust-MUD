@@ -25,8 +25,6 @@ pub fn spwan_spell_system(
     for event in event_reader.iter() {
         if let InsertComponentEvent(entity, ProtocolKind::Spell) = event {
             if let Ok(_) = query.get(*entity) {
-                info!("add spell to entity");
-
                 local
                     .entity(*entity)
                     .insert(SpriteSheetBundle {
