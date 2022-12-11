@@ -1,7 +1,6 @@
 pub mod events;
 
 mod init;
-pub mod player;
 pub mod spell;
 mod sync;
 mod tick;

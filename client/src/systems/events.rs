@@ -24,8 +24,8 @@ use naia_bevy_demo_shared::{
 };
 
 use crate::{
+    plugins::player::PlayerTimer,
     resources::{Global, OwnedEntity, PlayerTextures},
-    systems::player::PlayerTimer,
 };
 
 pub fn connect_event(client: Client<Protocol, Channels>) {
@@ -80,56 +80,6 @@ pub fn insert_enemy_event(
                     transform: Transform::from_xyz(0.0, 0.0, 0.0),
                     ..Default::default()
                 });
-            }
-        }
-    }
-}
-
-pub fn insert_component_event(
-    mut event_reader: EventReader<InsertComponentEvent<ProtocolKind>>,
-    mut local: Commands,
-    player_textures: Res<PlayerTextures>,
-    query: Query<&Player>,
-    global: ResMut<Global>,
-) {
-    for event in event_reader.iter() {
-        if let InsertComponentEvent(entity, ProtocolKind::Color) = event {
-            if let Ok(_) = query.get(*entity) {
-                info!("add player to entity!!!!!!!>>>>>>>>>>>");
-
-                // FIXME, add the game stage to prevent this happen
-                // Check if the enity owned, if yes, break
-                if let Some(owned_entity) = &global.owned_entity {
-                    let server_entity = owned_entity.confirmed;
-                    if server_entity == *entity {
-                        info!("breaking create player, because it is yourself");
-                        break;
-                    }
-                }
-
-                local
-                    .entity(*entity)
-                    .insert(SpriteSheetBundle {
-                        texture_atlas: player_textures.body.clone(),
-                        transform: Transform {
-                            translation: Vec3::new(10.0, 10.0, 15.0),
-                            scale: Vec3::new(0.03125, 0.03125, 1.),
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
-                    .insert(PlayerTimer::default());
-
-                // ORG
-                // local.entity(*entity).insert(SpriteBundle {
-                //     sprite: Sprite {
-                //         custom_size: Some(Vec2::new(SQUARE_SIZE, SQUARE_SIZE)),
-                //         color,
-                //         ..Default::default()
-                //     },
-                //     transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                //     ..Default::default()
-                // });
             }
         }
     }
