@@ -8,7 +8,7 @@ use naia_bevy_server::{
 };
 
 use naia_bevy_demo_shared::{
-    protocol::{Color, ColorValue, CurrentUser, EntityAssignment, Player, Position, Protocol},
+    protocol::{Color, ColorValue, EntityAssignment, Player, Position, Protocol},
     Channels,
 };
 
@@ -78,7 +78,6 @@ pub fn connection_event<'world, 'state>(
             .insert(color)
             // return Entity id
             .insert(player)
-            .insert(CurrentUser::new())
             .id();
 
         global.user_to_prediction_map.insert(*user_key, entity);

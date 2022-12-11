@@ -19,7 +19,7 @@ use naia_bevy_client::{
 
 use naia_bevy_demo_shared::{
     behavior as shared_behavior,
-    protocol::{Color, ColorValue, CurrentUser, Enemy, Player, Position, Protocol, ProtocolKind},
+    protocol::{Color, ColorValue, Enemy, Player, Position, Protocol, ProtocolKind},
     Channels,
 };
 
@@ -27,8 +27,6 @@ use crate::{
     resources::{Global, OwnedEntity, PlayerTextures},
     systems::player::PlayerTimer,
 };
-
-const SQUARE_SIZE: f32 = 32.0;
 
 pub fn connect_event(client: Client<Protocol, Channels>) {
     info!("Client connected to: {}", client.server_address());
@@ -91,7 +89,7 @@ pub fn insert_component_event(
     mut event_reader: EventReader<InsertComponentEvent<ProtocolKind>>,
     mut local: Commands,
     player_textures: Res<PlayerTextures>,
-    query: Query<&Player, Without<CurrentUser>>,
+    query: Query<&Player>,
     global: ResMut<Global>,
 ) {
     for event in event_reader.iter() {

@@ -2,7 +2,6 @@ use naia_shared::Protocolize;
 
 mod auth;
 mod color;
-mod current_user;
 mod enemy;
 mod entity_assignment;
 mod key_command;
@@ -13,7 +12,6 @@ mod spell_key_command;
 
 pub use auth::Auth;
 pub use color::{Color, ColorValue};
-pub use current_user::CurrentUser;
 pub use enemy::Enemy;
 pub use entity_assignment::EntityAssignment;
 pub use key_command::KeyCommand;
@@ -33,5 +31,4 @@ pub enum Protocol {
     Enemy(Enemy),
     Player(Player),
     Spell(Spell),
-    CurrentUser(CurrentUser),
 }
