@@ -1,12 +1,19 @@
+use crate::resources::Global;
 use bevy::prelude::*;
+use naia_bevy_client::Stage;
 use naia_bevy_demo_shared::protocol::Player;
 
-use crate::resources::Global;
+pub struct CameraPlugin;
+impl Plugin for CameraPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(setup_camera)
+            .add_system_to_stage(Stage::Tick, camera_follow);
+    }
+}
 
-const SQUARE_SIZE: f32 = 32.0;
 pub fn setup_camera(mut commands: Commands) {
     info!("setup_camera");
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
     // commands.spawn_bundle(Camera2dBundle {
     //     projection: OrthographicProjection {
     //         scaling_mode: ScalingMode::None,
