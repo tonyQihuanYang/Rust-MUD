@@ -3,11 +3,14 @@ use naia_shared::{Property, Replicate};
 
 #[derive(Component, Replicate)]
 #[protocol_path = "crate::protocol::Protocol"]
-pub struct Enemy;
+pub struct Enemy {
+    pub movement_speed: Property<u8>,
+    pub movement_tick: Property<u8>,
+}
 
 impl Enemy {
-    pub fn new() -> Self {
-        Enemy::new_complete()
+    pub fn new(movement_speed: u8) -> Self {
+        Enemy::new_complete(movement_speed, 0)
     }
 }
 

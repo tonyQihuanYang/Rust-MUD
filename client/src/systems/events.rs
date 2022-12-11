@@ -73,18 +73,15 @@ pub fn insert_enemy_event(
                     }
                 };
 
-                local
-                    .entity(*entity)
-                    .insert(SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(Vec2::new(16.0, 16.0)),
-                            color,
-                            ..Default::default()
-                        },
-                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                local.entity(*entity).insert(SpriteBundle {
+                    sprite: Sprite {
+                        custom_size: Some(Vec2::new(16.0, 16.0)),
+                        color,
                         ..Default::default()
-                    })
-                    .insert(Enemy);
+                    },
+                    transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                    ..Default::default()
+                });
             }
         }
     }

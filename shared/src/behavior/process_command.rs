@@ -15,4 +15,7 @@ pub fn process_command(key_command: &KeyCommand, position: &mut Position) {
     if *key_command.d {
         *position.x = position.x.wrapping_add(SQUARE_SPEED);
     }
+    // reset the rotation, then set the rotation
+    *position.direction = 0f32;
+    *position.direction = *key_command.direction;
 }

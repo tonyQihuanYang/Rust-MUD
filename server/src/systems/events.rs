@@ -124,5 +124,18 @@ pub fn receive_message_event(
                     .insert(*entity, key_command.clone());
             }
         }
+
+        if let MessageEvent(
+            _user_key,
+            Channels::PlayerCommand,
+            Protocol::SpellKeyCommand(spell_key_command),
+        ) = event
+        {
+            if let Some(entity) = &spell_key_command.entity.get(&server) {
+                global
+                    .player_last_spell_command
+                    .insert(*entity, spell_key_command.clone());
+            }
+        }
     }
 }

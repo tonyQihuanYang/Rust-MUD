@@ -4,6 +4,7 @@ use naia_bevy_client::{ClientConfig, Plugin as ClientPlugin, Stage};
 
 use naia_bevy_demo_shared::{protocol::Protocol, shared_config, Channels};
 
+use crate::plugins::keyboard::KeyBoardInputPlugin;
 use crate::systems::{camera, events, init, input, player, spell, sync, tick};
 
 pub const RESOLUTION: f32 = 16.0 / 9.0;
@@ -47,7 +48,8 @@ pub fn run() {
         .add_system_to_stage(Stage::ReceiveEvents, events::update_component_event)
         .add_system_to_stage(Stage::ReceiveEvents, events::receive_message_event)
         .add_system_to_stage(Stage::ReceiveEvents, events::insert_enemy_event)
-        .add_system_to_stage(Stage::Frame, input)
+        // .add_system_to_stage(Stage::Frame, input)
+        .add_plugin(KeyBoardInputPlugin)
         .add_system_to_stage(Stage::PostFrame, sync)
         // Gameplay Loop on Tick
         .add_system_to_stage(Stage::Tick, player::player_animation_system)

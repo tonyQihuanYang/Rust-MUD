@@ -22,35 +22,39 @@ impl Plugin for SpellPlugin {
     fn build(&self, app: &mut App) {
         // .add_system_to_stage(Stage::Tick, spell::spwan_spell_system)
         // .add_system_to_stage(Stage::Tick, spell::update_spell_system)
-        app.add_system_to_stage(Stage::Tick, spwan_spell_system);
-        app.add_system_to_stage(Stage::Tick, detect_spell_collision);
+        app.add_system_to_stage(Stage::Tick, spwan_spell_system)
+            .add_system_to_stage(Stage::Tick, detect_spell_collision);
     }
 }
 
-pub fn spwan_spell_system(mut global: ResMut<Global>, mut server: Server<Protocol, Channels>) {
-    // if global.spell_tick == 0 {
-    //     info!("spawn spell server");
-    //     let server = &mut server;
-    //     let position = {
-    //         let x = 16 * ((Random::gen_range_u32(0, 40) as i16) - 20);
-    //         let y = 16 * ((Random::gen_range_u32(0, 30) as i16) - 15);
-    //         Position::new(x, y)
-    //     };
-    //     server
-    //         // Spawn new Square Entity
-    //         .spawn()
-    //         // Add Entity to main Room
-    //         .enter_room(&global.main_room_key)
-    //         // Insert Position component
-    //         .insert(position)
-    //         // Insert Color component
-    //         .insert(Color::new(ColorValue::Red))
-    //         .insert(Spell::new(1, 60, 60, 0, 0));
-    //     global.spell_tick += 1;
-    // }
+pub fn spwan_spell_system(
+    mut global: ResMut<Global>,
+    mut server: Server<Protocol, Channels>,
+
+    mut position_query: Query<&mut Position>,
+) {
+    // Process all received commands
+    let main_room_key = global.main_room_key.clone();
+    for (entity, last_command) in global.player_last_spell_command.drain() {
+        if let Ok(mut position) = position_query.get_mut(entity) {
+            if *last_command.space {
+                info!("pressed space pos {} - {}", *position.x, *position.y);
+                server
+                    // Spawn new Square Entity
+                    .spawn()
+                    // Add Entity to main Room
+                    .enter_room(&main_room_key)
+                    // Insert Position component
+                    .insert(position.clone())
+                    .insert(Spell::new(1, 60, 60, 0, 0));
+            }
+        }
+    }
+    server.send_all_updates();
 }
 
 pub fn detect_spell_collision(
+    mut global: ResMut<Global>,
     mut server: Server<Protocol, Channels>,
     mut spell_query: Query<(&Position, Entity), With<Spell>>,
     mut enemy_query: Query<(&Position, Entity), With<Enemy>>,
@@ -68,8 +72,11 @@ pub fn detect_spell_collision(
             .is_some()
             {
                 info!("Hitted");
+
+                // server.user_scope(..).exclude(..);
                 server.entity_mut(&enemy_entity).despawn();
                 server.entity_mut(&spell_entity).despawn();
+                global.enemy_count += 1;
             }
         }
     }

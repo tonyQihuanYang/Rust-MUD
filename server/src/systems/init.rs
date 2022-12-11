@@ -39,6 +39,7 @@ pub fn init(mut commands: Commands, mut server: Server<Protocol, Channels>) {
         main_room_key,
         user_to_prediction_map: HashMap::new(),
         player_last_command: HashMap::new(),
+        player_last_spell_command: HashMap::new(),
         enemy_count: 0,
         spell_tick: 0,
     })

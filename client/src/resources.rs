@@ -8,7 +8,7 @@ use bevy::{
 
 use naia_bevy_client::CommandHistory;
 
-use naia_bevy_demo_shared::protocol::KeyCommand;
+use naia_bevy_demo_shared::protocol::{KeyCommand, SpellKeyCommand};
 
 pub struct OwnedEntity {
     pub confirmed: Entity,
@@ -29,6 +29,8 @@ pub struct Global {
     pub owned_entity: Option<OwnedEntity>,
     pub queued_command: Option<KeyCommand>,
     pub command_history: CommandHistory<KeyCommand>,
+    pub queued_spell_command: Option<SpellKeyCommand>,
+    pub spell_command_history: CommandHistory<SpellKeyCommand>,
 }
 
 #[derive(Resource, Clone)]

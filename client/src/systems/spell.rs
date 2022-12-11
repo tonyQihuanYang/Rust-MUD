@@ -1,10 +1,10 @@
 use bevy::{
-    prelude::{info, Commands, Component, EventReader, Query, Res, Transform, Vec3, With},
-    sprite::{SpriteSheetBundle, TextureAtlasSprite},
+    prelude::*,
+    sprite::{Sprite, SpriteBundle, SpriteSheetBundle, TextureAtlasSprite},
     time::{Time, Timer, TimerMode},
 };
 use naia_bevy_client::events::InsertComponentEvent;
-use naia_bevy_demo_shared::protocol::{ProtocolKind, Spell};
+use naia_bevy_demo_shared::protocol::{Position, ProtocolKind, Spell};
 
 use crate::resources::SpellsTextures;
 
@@ -20,18 +20,19 @@ pub fn spwan_spell_system(
     mut event_reader: EventReader<InsertComponentEvent<ProtocolKind>>,
     mut local: Commands,
     textures: Res<SpellsTextures>,
-    query: Query<&Spell>,
+    query: Query<&Position, With<Spell>>,
 ) {
     for event in event_reader.iter() {
         if let InsertComponentEvent(entity, ProtocolKind::Spell) = event {
-            if let Ok(_) = query.get(*entity) {
+            if let Ok(pos) = query.get(*entity) {
                 local
                     .entity(*entity)
                     .insert(SpriteSheetBundle {
                         texture_atlas: textures.spell_1.clone(),
                         transform: Transform {
-                            translation: Vec3::new(10.0, 10.0, 15.0),
+                            translation: Vec3::new(*pos.x as f32, *pos.y as f32, 90.0),
                             scale: Vec3::new(1.0, 1.0, 1.),
+                            // rotation: Quat::from_rotation_z(45f32),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -45,11 +46,12 @@ pub fn spwan_spell_system(
 pub fn spell_animation_system(
     textures: Res<SpellsTextures>,
     time: Res<Time>,
-    mut query: Query<(&mut SpellTimer, &mut TextureAtlasSprite), With<Spell>>,
+    mut query: Query<(&mut SpellTimer, &mut TextureAtlasSprite, &mut Transform), With<Spell>>,
 ) {
-    for (mut timer, mut sprite) in query.iter_mut() {
+    for (mut timer, mut sprite, mut transform) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
+            // transform.rotate_z(45.0);
             if sprite.index < textures.length - 1 {
                 sprite.index += 1; // move to next sprite cell
             } else {
