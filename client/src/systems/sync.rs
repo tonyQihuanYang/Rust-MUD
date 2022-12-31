@@ -4,7 +4,7 @@ use bevy::{
     transform::components::Transform,
 };
 
-use naia_bevy_demo_shared::protocol::Position;
+use naia_bevy_demo_shared::protocol::{Direction, Position};
 
 pub fn sync(mut query: Query<(&Position, &mut Transform)>) {
     for (pos, mut transform) in query.iter_mut() {
@@ -18,11 +18,11 @@ pub fn sync(mut query: Query<(&Position, &mut Transform)>) {
         //     _ => Quat::from_rotation_z(-std::f32::consts::FRAC_PI_2), // right
         // };
 
-        let rotation = if *pos.direction == 180f32 {
-            Quat::from_rotation_y(std::f32::consts::PI)
-        } else {
-            Quat::default()
+        let rotation = match *pos.direction {
+            Direction::Left => Quat::from_rotation_y(std::f32::consts::PI),
+            _ => Quat::default(),
         };
+
         transform.rotation = rotation;
     }
 }

@@ -7,7 +7,7 @@ use bevy::{
 use naia_bevy_client::{Client, Stage};
 
 use naia_bevy_demo_shared::{
-    protocol::{KeyCommand, Protocol, SpellKeyCommand},
+    protocol::{Direction, KeyCommand, Protocol, SpellKeyCommand},
     Channels,
 };
 
@@ -32,13 +32,13 @@ pub fn player_movement_input(
     let a = keyboard_input.pressed(KeyCode::A);
     let d = keyboard_input.pressed(KeyCode::D);
     let direction = if a {
-        180f32
+        Direction::Left // 180f32
     } else if s {
-        45f32
+        Direction::Down // 45f32
     } else if w {
-        270f32
+        Direction::Up // 270f32
     } else {
-        0f32
+        Direction::Right // 0f32
     };
 
     if !w && !s && !a && !d {
@@ -48,19 +48,19 @@ pub fn player_movement_input(
     if let Some(command) = &mut global.queued_command {
         if w {
             *command.w = true;
-            *command.direction = direction;
+            *command.direction = direction.clone();
         }
         if s {
             *command.s = true;
-            *command.direction = direction;
+            *command.direction = direction.clone();
         }
         if a {
             *command.a = true;
-            *command.direction = direction;
+            *command.direction = direction.clone();
         }
         if d {
             *command.d = true;
-            *command.direction = direction;
+            *command.direction = direction.clone();
         }
     } else if let Some(owned_entity) = &global.owned_entity {
         let mut key_command = KeyCommand::new(w, s, a, d, direction);

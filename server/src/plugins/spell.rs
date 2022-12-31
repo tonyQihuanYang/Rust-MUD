@@ -11,7 +11,7 @@ use bevy_math::{Vec2, Vec3};
 use naia_bevy_server::{Server, Stage};
 
 use naia_bevy_demo_shared::{
-    protocol::{Enemy, Position, Protocol, Spell},
+    protocol::{Direction, Enemy, Position, Protocol, Spell},
     Channels,
 };
 
@@ -67,7 +67,12 @@ pub fn update_spell(
                 *spell.cur_tick = 0;
                 *spell.range -= 1;
                 //TODO: Update the position by direction
-                *spell_pos.x = spell_pos.x.wrapping_add(10i16);
+                match *spell_pos.direction {
+                    Direction::Left => *spell_pos.x = spell_pos.x.wrapping_add(10i16),
+                    Direction::Right => *spell_pos.x = spell_pos.x.wrapping_sub(10i16),
+                    Direction::Up => *spell_pos.y = spell_pos.y.wrapping_sub(10i16),
+                    Direction::Down => *spell_pos.y = spell_pos.y.wrapping_add(10i16),
+                };
             }
         }
     }

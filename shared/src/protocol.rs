@@ -16,7 +16,7 @@ pub use enemy::Enemy;
 pub use entity_assignment::EntityAssignment;
 pub use key_command::KeyCommand;
 pub use player::Player;
-pub use position::Position;
+pub use position::{Direction, Position};
 pub use spell::Spell;
 pub use spell_key_command::SpellKeyCommand;
 
