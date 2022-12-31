@@ -46,12 +46,11 @@ pub fn spwan_spell_system(
 pub fn spell_animation_system(
     textures: Res<SpellsTextures>,
     time: Res<Time>,
-    mut query: Query<(&mut SpellTimer, &mut TextureAtlasSprite, &mut Transform), With<Spell>>,
+    mut query: Query<(&mut SpellTimer, &mut TextureAtlasSprite), With<Spell>>,
 ) {
-    for (mut timer, mut sprite, mut transform) in query.iter_mut() {
+    for (mut timer, mut sprite) in query.iter_mut() {
         timer.0.tick(time.delta());
         if timer.0.finished() {
-            // transform.rotate_z(45.0);
             if sprite.index < textures.length - 1 {
                 sprite.index += 1; // move to next sprite cell
             } else {

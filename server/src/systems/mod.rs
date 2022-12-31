@@ -1,7 +1,6 @@
 mod enemy;
 pub mod events;
 mod init;
-pub mod spell;
 mod tick;
 
 pub use enemy::enemy;

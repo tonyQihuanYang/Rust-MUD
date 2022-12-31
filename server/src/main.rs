@@ -6,10 +6,14 @@ use naia_bevy_server::{Plugin as ServerPlugin, ServerConfig, Stage};
 
 use naia_bevy_demo_shared::{protocol::Protocol, shared_config, Channels};
 
+mod plugins;
 mod resources;
 mod systems;
 
-use crate::systems::{enemy, enermy_movement, events, init, spell, tick};
+use crate::{
+    plugins::SpellPlugin,
+    systems::{enemy, enermy_movement, events, init, tick},
+};
 
 // use crate::systems::{enemy::enemy, events, init::init, tick::tick};
 
@@ -34,7 +38,7 @@ fn main() {
         .add_system_to_stage(Stage::ReceiveEvents, events::disconnection_event)
         .add_system_to_stage(Stage::ReceiveEvents, events::receive_message_event)
         .add_system(enemy)
-        .add_plugin(spell::SpellPlugin)
+        .add_plugin(SpellPlugin)
         // .add_system_to_stage(Stage::Tick, spell::spwan_spell_system)
         // .add_system_to_stage(Stage::Tick, spell::update_spell_system)
         // .add_system_to_stage(Stage::Tick, spell::detect_spell_collision)

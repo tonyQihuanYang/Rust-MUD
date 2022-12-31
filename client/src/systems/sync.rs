@@ -1,4 +1,8 @@
-use bevy::{ecs::system::Query, prelude::Quat, transform::components::Transform};
+use bevy::{
+    ecs::system::Query,
+    prelude::{info, Quat},
+    transform::components::Transform,
+};
 
 use naia_bevy_demo_shared::protocol::Position;
 
@@ -19,7 +23,6 @@ pub fn sync(mut query: Query<(&Position, &mut Transform)>) {
         } else {
             Quat::default()
         };
-
         transform.rotation = rotation;
     }
 }

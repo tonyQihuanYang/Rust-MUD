@@ -79,13 +79,20 @@ pub fn player_acctack_input(
         return;
     }
 
-    if let Some(command) = &mut global.queued_spell_command {
-        *command.space = true;
-    } else if let Some(owned_entity) = &global.owned_entity {
+    info!("Pressed space");
+    if let Some(owned_entity) = &global.owned_entity {
         let mut key_command = SpellKeyCommand::new(space);
         key_command.entity.set(&client, &owned_entity.confirmed);
         global.queued_spell_command = Some(key_command);
     }
+
+    //     if let Some(command) = &mut global.queued_spell_command {
+    //         *command.space = true;
+    //     } else if let Some(owned_entity) = &global.owned_entity {
+    //         let mut key_command = SpellKeyCommand::new(space);
+    //         key_command.entity.set(&client, &owned_entity.confirmed);
+    //         global.queued_spell_command = Some(key_command);
+    //     }
 }
 
 pub fn send_key_commands(
@@ -108,7 +115,7 @@ pub fn send_key_commands(
 
                 // Send command
                 client.send_message(Channels::PlayerCommand, &command);
-
+                info!("Send Cmd");
                 // Apply command
                 // if let Ok(mut position) = position_query.get_mut(predicted_entity) {
                 //     shared_behavior::process_command(&command, &mut position);
