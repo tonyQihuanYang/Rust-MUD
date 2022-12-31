@@ -95,7 +95,7 @@ pub fn detect_spell_collision(
                 // server.user_scope(..).exclude(..);
                 server.entity_mut(&enemy_entity).despawn();
                 server.entity_mut(&spell_entity).despawn();
-                global.enemy_count += 1;
+                global.enemy_count -= 1;
             }
         }
     }
